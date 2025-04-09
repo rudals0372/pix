@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>카드 클릭 시 화면 꽉 찬 정보 제공</title>
+    <!-- Font Awesome 아이콘 라이브러리 추가 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
         body {
             margin: 0;
@@ -70,18 +72,20 @@
             font-size: 18px;
         }
 
+        /* 닫기 버튼 스타일 */
         .close-btn {
-            background-color: #f44336;
-            color: white;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: transparent;
             border: none;
-            padding: 10px 20px;
+            font-size: 24px;
+            color: #333;
             cursor: pointer;
-            border-radius: 5px;
-            margin-top: 20px;
         }
 
         .close-btn:hover {
-            background-color: #e53935;
+            color: #f44336;
         }
 
     </style>
@@ -117,10 +121,12 @@
 
     <!-- 전체 화면 정보 (초기엔 숨겨짐) -->
     <div id="full-screen-info" class="full-screen-info">
+        <button class="close-btn" onclick="closeFullScreen()">
+            <i class="fas fa-times"></i> <!-- 닫기 아이콘 -->
+        </button>
         <div>
             <h2>카드 정보</h2>
             <p id="full-screen-text">카드에 대한 세부 정보가 여기에 표시됩니다.</p>
-            <button class="close-btn" onclick="closeFullScreen()">닫기</button>
         </div>
     </div>
 
