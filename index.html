@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>모바일 카드형 웹</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    #app {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .screen {
+      display: none;
+      width: 100%;
+      height: 100vh;
+      padding: 20px;
+    }
+
+    .card-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .card {
+      background-color: #f4f4f4;
+      padding: 20px;
+      text-align: center;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s;
+    }
+
+    .card:hover {
+      transform: scale(1.05);
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- 첫 번째 화면 -->
+    <div id="main-screen" class="screen">
+      <div class="card-container">
+        <!-- 각 카드 -->
+        <div class="card" onclick="openDetail(1)">
+          <p>카드 1</p>
+        </div>
+        <div class="card" onclick="openDetail(2)">
+          <p>카드 2</p>
+        </div>
+        <div class="card" onclick="openDetail(3)">
+          <p>카드 3</p>
+        </div>
+        <div class="card" onclick="openDetail(4)">
+          <p>카드 4</p>
+        </div>
+        <div class="card" onclick="openDetail(5)">
+          <p>카드 5</p>
+        </div>
+        <div class="card" onclick="openDetail(6)">
+          <p>카드 6</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 두 번째 화면 (카드 상세보기 화면) -->
+    <div id="detail-screen" class="screen" style="display: none;">
+      <button onclick="goBack()">뒤로 가기</button>
+      <h2 id="card-detail-title"></h2>
+      <p id="card-detail-description"></p>
+    </div>
+  </div>
+
+  <script>
+    function openDetail(cardNumber) {
+      // 상세 화면을 보여주고, 메인 화면을 숨깁니다.
+      document.getElementById('main-screen').style.display = 'none';
+      document.getElementById('detail-screen').style.display = 'block';
+
+      // 카드에 대한 상세 정보 설정
+      const cardDetailTitle = document.getElementById('card-detail-title');
+      const cardDetailDescription = document.getElementById('card-detail-description');
+
+      cardDetailTitle.textContent = `카드 ${cardNumber} 상세보기`;
+      cardDetailDescription.textContent = `여기는 카드 ${cardNumber}에 대한 상세 설명입니다.`;
+    }
+
+    function goBack() {
+      // 상세 화면을 숨기고, 메인 화면을 다시 보이게 합니다.
+      document.getElementById('detail-screen').style.display = 'none';
+      document.getElementById('main-screen').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
