@@ -82,9 +82,26 @@
             font-size: 24px;
             color: #333;
             cursor: pointer;
+            padding: 0;
+            margin: 0;
         }
 
+        .close-btn:focus {
+            outline: none; /* 포커스 시 외곽선 제거 */
+        }
 
+        .close-btn i {
+            display: block;
+            width: 24px;
+            height: 24px;
+            background-color: #333;
+            mask: url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/svgs/solid/times.svg') center/contain no-repeat;
+            -webkit-mask: url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/svgs/solid/times.svg') center/contain no-repeat;
+        }
+
+        .close-btn:hover i {
+            background-color: #f44336; /* 마우스 오버 시 아이콘 색상 변경 */
+        }
 
     </style>
 </head>
@@ -120,7 +137,7 @@
     <!-- 전체 화면 정보 (초기엔 숨겨짐) -->
     <div id="full-screen-info" class="full-screen-info">
         <button class="close-btn" onclick="closeFullScreen()">
-            <i class="fas fa-times"></i> <!-- 닫기 아이콘 -->
+            <i></i> <!-- 닫기 아이콘 -->
         </button>
         <div>
             <h2>카드 정보</h2>
