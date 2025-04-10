@@ -129,7 +129,37 @@
     background-color: transparent; /* 배경 색상 변경 방지 */
     transform: none; /* 클릭 시 크기 변화 방지 */
 }
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
 
+            .card {
+                padding: 15px;
+                font-size: 14px;
+            }
+
+            .container {
+                grid-template-columns: repeat(2, 1fr); /* 한 줄에 두 개 */
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .card {
+                padding: 15px;
+                font-size: 13px;
+            }
+
+            .container {
+                grid-template-columns: repeat(2, 1fr); /* 모바일에서도 두 개씩 */
+            }
+
+        }
     </style>
 </head>
 <body>
