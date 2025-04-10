@@ -73,21 +73,23 @@
         }
 
         /* 닫기 버튼 스타일 */
-        .close-btn {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background-color: transparent;
-            border: none;
-            font-size: 24px;
-            color: #333;
-            cursor: pointer;
-        }
+.close-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background-color: transparent;
+    border: none;
+    font-size: 24px;
+    color: #333;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+}
 
-        .close-btn:hover {
-            color: #f44336;
-        }
-
+.close-btn:focus {
+    outline: none; /* 포커스 시 외곽선 제거 */
+    box-shadow: none; /* 포커스 시 그림자 효과 제거 */
+}
     </style>
 </head>
 <body>
