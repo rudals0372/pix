@@ -13,11 +13,19 @@
             font-family: Arial, sans-serif;
         }
 
+        /* 제목 */
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 32px; /* 제목 크기 설정 */
+            color: #333;
+        }
+
         /* 카드 레이아웃 */
         .card-container {
             display: grid;
-            grid-template-columns: repeat(2, 1fr); /* 한 행에 카드 두 개씩 */
-            grid-template-rows: repeat(4, 1fr); /* 4개 행 */
+            grid-template-columns: repeat(3, 1fr); /* 한 행에 카드 3개씩 */
+            grid-template-rows: repeat(2, 1fr); /* 2개 행 */
             gap: 10px;
             padding: 20px;
         }
@@ -31,7 +39,7 @@
             flex-direction: column; /* 제목과 아이콘을 세로로 정렬 */
             height: 160px; /* 카드 높이 설정 */
             width: 160px; /* 카드 너비 설정 */
-            font-size: 50px; /* 아이콘 크기 설정 */
+            font-size: 40px; /* 아이콘 크기 설정 */
             color: #333;
             cursor: pointer;
             transition: transform 0.3s ease;
@@ -44,6 +52,11 @@
 
         .card i {
             margin-bottom: 10px; /* 아이콘과 제목 사이 간격 */
+        }
+
+        .card p {
+            font-size: 14px; /* 카드 내 글씨 크기 줄임 */
+            margin: 0;
         }
 
         /* 화면 꽉 채우는 정보 화면 */
@@ -96,6 +109,8 @@
 </head>
 <body>
 
+    <h1>OO</h1> <!-- 제목 -->
+
     <div class="card-container">
         <div class="card" data-card="1">
             <i class="fas fa-book"></i> <!-- 책 아이콘 -->
@@ -118,14 +133,6 @@
             <p>기타</p>
         </div>
         <div class="card" data-card="6">
-            <i class="fas fa-file-alt"></i> <!-- 문서 아이콘 -->
-            <p>기타</p>
-        </div>
-        <div class="card" data-card="7">
-            <i class="fas fa-video"></i> <!-- 비디오 카메라 아이콘 -->
-            <p>동영상</p>
-        </div>
-        <div class="card" data-card="8">
             <i class="fas fa-video"></i> <!-- 비디오 카메라 아이콘 -->
             <p>동영상</p>
         </div>
