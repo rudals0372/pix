@@ -176,7 +176,7 @@
 
     <div class="container">
         <div class="card" data-card="1">
-            <i class="fa fa-book" style="font-size: 30px;"></i> <!-- 책 아이콘 -->
+            <i class="fas fa-book" style="font-size: 30px;"></i> <!-- 책 아이콘 -->
             <p>매뉴얼</p>
         </div>
         <div class="card" data-card="2">
@@ -238,86 +238,65 @@
             },
             // 추가 카드 정보를 여기에 넣을 수 있습니다.
         };
-// 카드 클릭 시 이벤트 처리
-cards.forEach(card => {
-    card.addEventListener('click', function() {
-        // 카드 클릭 시 클릭 효과 제거 (클릭한 카드만 활성화되도록 초기화)
-        cards.forEach(c => c.classList.remove('clicked'));
 
-        // 현재 클릭된 카드에 'clicked' 클래스를 추가하여 클릭 효과 주기
-        this.classList.add('clicked');
+        // 카드 클릭 시 이벤트 처리
+        cards.forEach(card => {
+            card.addEventListener('click', function() {
+                const cardNumber = this.getAttribute('data-card');
+                const data = cardData[cardNumber];  // 클릭한 카드에 대한 데이터 가져오기
+                
+                // 카드 타입에 따른 처리
+                if (data.type === 'pdf') {
+                    // PDF 미리보기 버튼을 표시
+                    let pdfButtons = '';
+                    data.pdfUrls.forEach(item => {
+                        pdfButtons += `
+                            <button onclick="openPDF('${item.url}')" class="pdf-button">
+                                ${item.name}
+                            </button>
+                        `;
+                    });
 
-        const cardNumber = this.getAttribute('data-card');
-        const data = cardData[cardNumber];  // 클릭한 카드에 대한 데이터 가져오기
-        
-        // 카드 타입에 따른 처리
-        if (data.type === 'pdf') {
-            // PDF 미리보기 버튼을 표시
-            let pdfButtons = '';
-            data.pdfUrls.forEach(item => {
-                pdfButtons += `
-                    <button onclick="openPDF('${item.url}')" class="pdf-button">
-                        ${item.name}
-                    </button>
-                `;
+                    fullScreenText.innerHTML = `
+                        <h2>${data.title}</h2>
+                        <p>${data.content}</p>
+                        <div>
+                            ${pdfButtons}
+                        </div>
+                    `;
+                } else if (data.type === 'video') {
+                    // MP4 동영상 미리보기를 표시
+                    fullScreenText.innerHTML = `
+                        <h2>${data.title}</h2>
+                        <p>${data.content}</p>
+                        <video controls width="100%" height="auto">
+                            <source src="${data.videoUrl}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    `;
+                }
+                
+                // 전체 화면 정보 창 표시
+                fullScreenInfo.style.display = 'flex';
+
+                // 뒤로가기 버튼 동작 설정
+                history.pushState(null, null, window.location.href);
+                window.onpopstate = function() {
+                    closeFullScreen();
+                };
             });
+        });
 
-            fullScreenText.innerHTML = `
-                <h2>${data.title}</h2>
-                <p>${data.content}</p>
-                <div>
-                    ${pdfButtons}
-                </div>
-            `;
-        } else if (data.type === 'video') {
-            // MP4 동영상 미리보기를 표시
-            fullScreenText.innerHTML = `
-                <h2>${data.title}</h2>
-                <p>${data.content}</p>
-                <video controls width="100%" height="auto">
-                    <source src="${data.videoUrl}" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>
-            `;
+        // PDF 미리보기 함수 (새 탭에서 PDF 열기)
+        function openPDF(pdfUrl) {
+            const viewerUrl = `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(pdfUrl)}`;
+            window.open(viewerUrl, '_blank');
         }
-        
-        // 전체 화면 정보 창 표시
-        fullScreenInfo.style.display = 'flex';
 
-        // 상태 추가
-        history.pushState({ cardClicked: true }, "", window.location.href);
-
-        // 뒤로가기 버튼 동작 설정
-        window.onpopstate = function(event) {
-            // 카드 클릭 효과 초기화 (뒤로가기 시 카드 효과가 사라짐)
-            cards.forEach(c => c.classList.remove('clicked'));
-            closeFullScreen();
-        };
-
-        // 페이지 상태를 업데이트
-        history.replaceState({ cardClicked: true }, "", window.location.href);
-    });
-});
-
-// PDF 미리보기 함수 (새 탭에서 PDF 열기)
-function openPDF(pdfUrl) {
-    const viewerUrl = `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(pdfUrl)}`;
-    window.open(viewerUrl, '_blank');
-}
-
-// 전체 화면 정보 창 닫기
-function closeFullScreen() {
-    fullScreenInfo.style.display = 'none';
-}
-
-// 모바일 뒤로가기 키 처리 (화면이 보이지 않으면 상태 초기화)
-document.addEventListener("visibilitychange", function() {
-    if (document.hidden) {
-        // 페이지가 숨겨지면 카드 클릭 효과를 초기화
-        cards.forEach(c => c.classList.remove('clicked'));
-        closeFullScreen();
-    }
-});
+        // 전체 화면 정보 창 닫기
+        function closeFullScreen() {
+            fullScreenInfo.style.display = 'none';
+        }
     </script>
 
 </body>
