@@ -293,6 +293,9 @@ cards.forEach(card => {
             cards.forEach(c => c.classList.remove('clicked'));
             closeFullScreen();
         };
+
+        // 페이지 상태를 업데이트
+        history.replaceState({ cardClicked: true }, "", window.location.href);
     });
 });
 
