@@ -121,23 +121,36 @@
 
         /* PDF 버튼 스타일 */
 .pdf-button {
-    padding: 8px 16px;           /* 내부 여백을 조금 줄여서 크기를 적당히 */
-    background-color: #333;   /* 부드러운 초록색 */
-    color: #f9f9f9;
-    border: 2px solid #333;   /* 테두리 색상 */
-    border-radius: 8px;
-    font-size: 14px;              /* 폰트 크기 조금 줄이기 */
+    padding: 8px 16px;               /* 내부 여백을 조금 줄여서 크기를 적당히 */
+    background-color: #333;          /* 배경 색상 */
+    color: #f9f9f9;                  /* 텍스트 색상 */
+    border: 2px solid #333;          /* 테두리 색상 */
+    border-radius: 8px;              /* 둥근 모서리 */
+    font-size: 14px;                 /* 폰트 크기 */
     cursor: pointer;
     transition: background-color 0.3s, transform 0.3s;
-    width: 37%;                  /* 모바일에서 버튼 크기 적당히 맞추기 */
-    margin: 8px 2.5%;   /* 양옆에 여백을 넣어 두 개의 버튼이 한 행에 잘 배치되도록 */
-   
+
     /* 고정된 크기 설정 */
     height: 35px;                    /* 버튼의 높이 */
-    display: inline-block;           /* 버튼을 인라인 블록으로 설정 */
+    width: 45%;                      /* 모바일에서 버튼 크기 적당히 맞추기 */
+    margin: 8px 2.5%;                /* 양옆에 여백을 넣어 두 개의 버튼이 한 행에 잘 배치되도록 */
+    
+    /* 버튼의 텍스트 중앙 정렬을 위한 설정 */
+    display: inline-flex;            /* flexbox 사용 (inline-block처럼 인라인으로 처리) */
+    justify-content: center;         /* 수평 중앙 정렬 */
+    align-items: center;             /* 수직 중앙 정렬 */
     text-align: center;              /* 텍스트를 가운데 정렬 */
-    line-height: 35px;               /* 텍스트가 버튼 높이에 맞게 수직 중앙 정렬 */
+}
 
+.pdf-button:hover {
+    background-color: #45a049;       /* 호버 시 색상 변경 */
+    transform: scale(1.05);
+}
+
+.pdf-buttons-container {
+    display: flex;
+    flex-wrap: wrap;                 /* 버튼들이 한 행에 두 개씩 배치되도록 설정 */
+    justify-content: space-between;  /* 버튼들 사이에 균등한 간격을 둡니다 */
 }
 
 
@@ -213,7 +226,23 @@
             <p>동영상2</p>
         </div>
     </div>
-
+<div class="pdf-buttons-container">
+    <button onclick="openPDF('https://raw.githubusercontent.com/rudals0372/k/main/docs/검사기준.pdf')" class="pdf-button">
+        검사기준
+    </button>
+    <button onclick="openPDF('https://raw.githubusercontent.com/rudals0372/k/main/docs/노스가동매뉴얼.pdf')" class="pdf-button">
+        노스가동 매뉴얼
+    </button>
+    <button onclick="openPDF('https://raw.githubusercontent.com/rudals0372/k/main/docs/설치방법.pdf')" class="pdf-button">
+        설치방법
+    </button>
+    <button onclick="openPDF('https://raw.githubusercontent.com/rudals0372/k/main/docs/유지보수매뉴얼.pdf')" class="pdf-button">
+        유지보수 매뉴얼
+    </button>
+    <button onclick="openPDF('https://raw.githubusercontent.com/rudals0372/k/main/docs/유지보수방법.pdf')" class="pdf-button">
+        유지보수 방법
+    </button>
+</div>
     <!-- 전체 화면 정보 (초기엔 숨겨짐) -->
     <div id="full-screen-info" class="full-screen-info">
         <button class="close-btn" onclick="closeFullScreen()">
