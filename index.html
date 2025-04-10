@@ -232,7 +232,7 @@
                     let pdfButtons = '';
                     data.pdfUrls.forEach(url => {
                         pdfButtons += `
-                            <button onclick="window.open('${url}', '_blank')" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 5px;">
+                            <button onclick="openPDF('${url}')" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 5px;">
                                 PDF 파일 보기
                             </button>
                         `;
@@ -261,6 +261,12 @@
                 fullScreenInfo.style.display = 'flex';
             });
         });
+
+        // PDF 미리보기 함수 (새 탭에서 PDF 열기)
+        function openPDF(pdfUrl) {
+            const viewerUrl = `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(pdfUrl)}`;
+            window.open(viewerUrl, '_blank');
+        }
 
         // 전체 화면 정보 창 닫기
         function closeFullScreen() {
