@@ -306,6 +306,15 @@ function openPDF(pdfUrl) {
 function closeFullScreen() {
     fullScreenInfo.style.display = 'none';
 }
+
+// 모바일 뒤로가기 키 처리 (화면이 보이지 않으면 상태 초기화)
+document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+        // 페이지가 숨겨지면 카드 클릭 효과를 초기화
+        cards.forEach(c => c.classList.remove('clicked'));
+        closeFullScreen();
+    }
+});
     </script>
 
 </body>
