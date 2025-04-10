@@ -284,12 +284,14 @@ cards.forEach(card => {
         // 전체 화면 정보 창 표시
         fullScreenInfo.style.display = 'flex';
 
+        // 상태 추가
+        history.pushState({ cardClicked: true }, "", window.location.href);
+
         // 뒤로가기 버튼 동작 설정
-        history.pushState(null, null, window.location.href);
-        window.onpopstate = function() {
-            closeFullScreen();
-            // 카드 효과 초기화 (뒤로가기 시 카드 효과가 사라짐)
+        window.onpopstate = function(event) {
+            // 카드 클릭 효과 초기화 (뒤로가기 시 카드 효과가 사라짐)
             cards.forEach(c => c.classList.remove('clicked'));
+            closeFullScreen();
         };
     });
 });
