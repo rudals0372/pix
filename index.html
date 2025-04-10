@@ -157,7 +157,7 @@
 
     <div class="container">
         <div class="card" data-card="1">
-            <i class="fas fa-book" style="font-size: 30px;"></i> <!-- 책 아이콘 -->
+            <i class="fa fa-book" style="font-size: 30px;"></i> <!-- 책 아이콘 -->
             <p>매뉴얼</p>
         </div>
         <div class="card" data-card="2">
@@ -181,89 +181,7 @@
             <p>동영상2</p>
         </div>
     </div>
-    <script>
-// 카드 클릭 시 화면 꽉 찬 정보 제공
-const cards = document.querySelectorAll('.card');
-const fullScreenInfo = document.getElementById('full-screen-info');
-const fullScreenText = document.getElementById('full-screen-text');
 
-const cardData = {
-    1: {
-        title: '매뉴얼',
-        content: '이 카드에 대한 상세한 매뉴얼 정보입니다.',
-        pdfUrls: [
-            'https://raw.githubusercontent.com/rudals0372/k/main/docs/검사기준.pdf',
-            'https://raw.githubusercontent.com/rudals0372/k/main/docs/노스가동매뉴얼.pdf',
-            'https://raw.githubusercontent.com/rudals0372/k/main/docs/설치방법.pdf',
-            'https://raw.githubusercontent.com/rudals0372/k/main/docs/유지보수매뉴얼.pdf',
-            'https://raw.githubusercontent.com/rudals0372/k/main/docs/유지보수방법.pdf'
-        ],
-        type: 'pdf'  // PDF 타입
-    },
-    5: {
-        title: '동영상 1',
-        content: '동영상 1에 대한 설명입니다.',
-        videoUrl: 'https://github.com/rudals0372/k/raw/main/밀착동영상.mp4',  // MP4 파일 URL
-        type: 'video'  // 비디오 타입
-    },
-    // 추가 카드 정보를 여기에 넣을 수 있습니다.
-};
-
-// 카드 클릭 시 이벤트 처리
-cards.forEach(card => {
-    card.addEventListener('click', function() {
-        const cardNumber = this.getAttribute('data-card');
-        const data = cardData[cardNumber];  // 클릭한 카드에 대한 데이터 가져오기
-        
-        // 카드 타입에 따른 처리
-        if (data.type === 'pdf') {
-            // PDF 미리보기 버튼을 표시
-            let pdfButtons = '';
-            data.pdfUrls.forEach(url => {
-                pdfButtons += `
-                    <button onclick="showPDF('${url}')" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 5px;">
-                        PDF 파일 보기
-                    </button>
-                `;
-            });
-
-            fullScreenText.innerHTML = `
-                <h2>${data.title}</h2>
-                <p>${data.content}</p>
-                <div>
-                    ${pdfButtons}
-                </div>
-                <div id="pdf-preview"></div> <!-- PDF 미리보기 영역 -->
-            `;
-        } else if (data.type === 'video') {
-            // MP4 동영상 미리보기를 표시
-            fullScreenText.innerHTML = `
-                <h2>${data.title}</h2>
-                <p>${data.content}</p>
-                <video controls width="100%" height="auto">
-                    <source src="${data.videoUrl}" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>
-            `;
-        }
-        
-        // 전체 화면 정보 창 표시
-        fullScreenInfo.style.display = 'flex';
-    });
-});
-
-// PDF 미리보기 함수
-function showPDF(pdfUrl) {
-    const pdfPreview = document.getElementById('pdf-preview');
-    pdfPreview.innerHTML = `
-        <iframe src="${pdfUrl}" width="100%" height="600px"></iframe>
-    `;
-}
-
-// 전체 화면 정보 창 닫기
-function closeFullScreen() {
-    fullScreenInfo.style.display = 'none';
-}
     <!-- 전체 화면 정보 (초기엔 숨겨짐) -->
     <div id="full-screen-info" class="full-screen-info">
         <button class="close-btn" onclick="closeFullScreen()">
@@ -275,6 +193,88 @@ function closeFullScreen() {
     </div>
 
     <script>
+        // 카드 클릭 시 화면 꽉 찬 정보 제공
+        const cards = document.querySelectorAll('.card');
+        const fullScreenInfo = document.getElementById('full-screen-info');
+        const fullScreenText = document.getElementById('full-screen-text');
+
+        const cardData = {
+            1: {
+                title: '매뉴얼',
+                content: '이 카드에 대한 상세한 매뉴얼 정보입니다.',
+                pdfUrls: [
+                    'https://raw.githubusercontent.com/rudals0372/k/main/docs/검사기준.pdf',
+                    'https://raw.githubusercontent.com/rudals0372/k/main/docs/노스가동매뉴얼.pdf',
+                    'https://raw.githubusercontent.com/rudals0372/k/main/docs/설치방법.pdf',
+                    'https://raw.githubusercontent.com/rudals0372/k/main/docs/유지보수매뉴얼.pdf',
+                    'https://raw.githubusercontent.com/rudals0372/k/main/docs/유지보수방법.pdf'
+                ],
+                type: 'pdf'  // PDF 타입
+            },
+            5: {
+                title: '동영상 1',
+                content: '동영상 1에 대한 설명입니다.',
+                videoUrl: 'https://github.com/rudals0372/k/raw/main/밀착동영상.mp4',  // MP4 파일 URL
+                type: 'video'  // 비디오 타입
+            },
+            // 추가 카드 정보를 여기에 넣을 수 있습니다.
+        };
+
+        // 카드 클릭 시 이벤트 처리
+        cards.forEach(card => {
+            card.addEventListener('click', function() {
+                const cardNumber = this.getAttribute('data-card');
+                const data = cardData[cardNumber];  // 클릭한 카드에 대한 데이터 가져오기
+                
+                // 카드 타입에 따른 처리
+                if (data.type === 'pdf') {
+                    // PDF 미리보기 버튼을 표시
+                    let pdfButtons = '';
+                    data.pdfUrls.forEach(url => {
+                        pdfButtons += `
+                            <button onclick="showPDF('${url}')" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 5px;">
+                                PDF 파일 보기
+                            </button>
+                        `;
+                    });
+
+                    fullScreenText.innerHTML = `
+                        <h2>${data.title}</h2>
+                        <p>${data.content}</p>
+                        <div>
+                            ${pdfButtons}
+                        </div>
+                        <div id="pdf-preview"></div> <!-- PDF 미리보기 영역 -->
+                    `;
+                } else if (data.type === 'video') {
+                    // MP4 동영상 미리보기를 표시
+                    fullScreenText.innerHTML = `
+                        <h2>${data.title}</h2>
+                        <p>${data.content}</p>
+                        <video controls width="100%" height="auto">
+                            <source src="${data.videoUrl}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    `;
+                }
+                
+                // 전체 화면 정보 창 표시
+                fullScreenInfo.style.display = 'flex';
+            });
+        });
+
+        // PDF 미리보기 함수
+        function showPDF(pdfUrl) {
+            const pdfPreview = document.getElementById('pdf-preview');
+            pdfPreview.innerHTML = `
+                <iframe src="${pdfUrl}" width="100%" height="600px"></iframe>
+            `;
+        }
+
+        // 전체 화면 정보 창 닫기
+        function closeFullScreen() {
+            fullScreenInfo.style.display = 'none';
+        }
     </script>
 
 </body>
