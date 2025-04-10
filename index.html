@@ -84,14 +84,16 @@
     cursor: pointer;
     padding: 0;
     margin: 0;
-    transition: transform 0.1s ease; /* 클릭 효과가 빠르게 사라지도록 설정 */
+    transition: all 0.2s ease; /* 버튼 상태 변경 시 부드럽게 처리 */
 }
 
+/* 포커스와 클릭 상태에서 시각적 변화 없애기 */
 .close-btn:focus,
 .close-btn:active {
-    outline: none; /* 포커스 및 클릭 시 외곽선 제거 */
-    box-shadow: none; /* 포커스 및 클릭 시 그림자 효과 제거 */
-    transform: scale(1); /* 클릭 시 크기 변화 없애기 */
+    outline: none; /* 포커스 시 외곽선 제거 */
+    box-shadow: none; /* 클릭 시 그림자 효과 제거 */
+    background-color: transparent; /* 배경 색상 변경 방지 */
+    transform: none; /* 클릭 시 크기 변화 방지 */
 }
     </style>
 </head>
