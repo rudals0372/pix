@@ -86,9 +86,11 @@
     margin: 0;
 }
 
-.close-btn:focus {
-    outline: none; /* 포커스 시 외곽선 제거 */
-    box-shadow: none; /* 포커스 시 그림자 효과 제거 */
+.close-btn:focus,
+.close-btn:active {
+    outline: none; /* 포커스 및 클릭 시 외곽선 제거 */
+    box-shadow: none; /* 포커스 및 클릭 시 그림자 효과 제거 */
+    background-color: transparent; /* 클릭 시 배경색 변화 제거 */
 }
     </style>
 </head>
