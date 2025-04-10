@@ -148,6 +148,7 @@
             .container {
                 grid-template-columns: repeat(2, 1fr); /* 모바일에서도 두 개씩 */
             }
+
         }
     </style>
 </head>
@@ -259,6 +260,12 @@
                 
                 // 전체 화면 정보 창 표시
                 fullScreenInfo.style.display = 'flex';
+
+                // 뒤로가기 버튼 동작 설정
+                history.pushState(null, null, window.location.href);
+                window.onpopstate = function() {
+                    closeFullScreen();
+                };
             });
         });
 
