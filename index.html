@@ -7,56 +7,72 @@
     <!-- Font Awesome 아이콘 라이브러리 추가 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
+        <!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MJ81</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
         body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f9f9f9;
             margin: 0;
             padding: 0;
-            font-family: Arial, sans-serif;
-        }
-
-        /* 제목 */
-        h1 {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 32px; /* 제목 크기 설정 */
             color: #333;
         }
 
-        /* 카드 레이아웃 */
-        .card-container {
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-top: 30px;
+            color: #333;
+        }
+
+        .container {
             display: grid;
-            grid-template-columns: repeat(2, 1fr); /* 한 행에 카드 2개씩 */
-            grid-template-rows: repeat(3, 1fr); /* 3개 행 */
+            grid-template-columns: repeat(2, 1fr);  /* 한 줄에 두 개 */
             gap: 20px;
             padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
         }
 
         .card {
-            background-color: #f4f4f4;
+            background-color: #fff;
             border-radius: 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column; /* 제목과 아이콘을 세로로 정렬 */
-            height: 160px; /* 카드 높이 설정 */
-            width: 160px; /* 카드 너비 설정 */
-            font-size: 40px; /* 아이콘 크기 설정 */
-            color: #333;
-            cursor: pointer;
-            transition: transform 0.3s ease;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             text-align: center;
-        }
-
-        .card:hover {
-            transform: scale(1.05);
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            width: 130px;  /* 카드의 너비 설정 */
+            height: 130px; /* 카드의 높이 설정 (정사각형) */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            margin: 0 auto;
         }
 
         .card i {
-            margin-bottom: 25px; /* 아이콘과 제목 사이 간격 추가 */
+            width: 50px;
+            height: 50px;
+            margin-bottom: 15px;
         }
 
         .card p {
-            font-size: 20px; /* 카드 내 글씨 크기 키우기 */
-            margin: 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin: 10px 0;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
         }
 
         /* 화면 꽉 채우는 정보 화면 */
@@ -116,7 +132,7 @@
 
     <h1>OO</h1> <!-- 제목 -->
 
-    <div class="card-container">
+    <div class="container">
         <div class="card" data-card="1">
             <i class="fas fa-book"></i> <!-- 책 아이콘 -->
             <p>매뉴얼</p>
