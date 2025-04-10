@@ -222,11 +222,11 @@
                 title: '매뉴얼',
                 content: '이 카드에 대한 상세한 매뉴얼 정보입니다.',
                 pdfUrls: [
-                    'https://raw.githubusercontent.com/rudals0372/k/main/docs/검사기준.pdf',
-                    'https://raw.githubusercontent.com/rudals0372/k/main/docs/노스가동매뉴얼.pdf',
-                    'https://raw.githubusercontent.com/rudals0372/k/main/docs/설치방법.pdf',
-                    'https://raw.githubusercontent.com/rudals0372/k/main/docs/유지보수매뉴얼.pdf',
-                    'https://raw.githubusercontent.com/rudals0372/k/main/docs/유지보수방법.pdf'
+                    { url: 'https://raw.githubusercontent.com/rudals0372/k/main/docs/검사기준.pdf', name: '검사기준 PDF' },
+                    { url: 'https://raw.githubusercontent.com/rudals0372/k/main/docs/노스가동매뉴얼.pdf', name: '노스가동 매뉴얼' },
+                    { url: 'https://raw.githubusercontent.com/rudals0372/k/main/docs/설치방법.pdf', name: '설치방법' },
+                    { url: 'https://raw.githubusercontent.com/rudals0372/k/main/docs/유지보수매뉴얼.pdf', name: '유지보수 매뉴얼' },
+                    { url: 'https://raw.githubusercontent.com/rudals0372/k/main/docs/유지보수방법.pdf', name: '유지보수 방법' }
                 ],
                 type: 'pdf'  // PDF 타입
             },
@@ -249,10 +249,10 @@
                 if (data.type === 'pdf') {
                     // PDF 미리보기 버튼을 표시
                     let pdfButtons = '';
-                    data.pdfUrls.forEach(url => {
+                    data.pdfUrls.forEach(item => {
                         pdfButtons += `
-                            <button onclick="openPDF('${url}')" class="pdf-button">
-                                PDF 파일 보기
+                            <button onclick="openPDF('${item.url}')" class="pdf-button">
+                                ${item.name}
                             </button>
                         `;
                     });
