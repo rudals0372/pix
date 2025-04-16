@@ -158,14 +158,13 @@
     box-sizing: border-box;
 }
 
-
 .pdf-buttons-container {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* 두 개씩 정렬 */
-    gap: 16px; /* 버튼 간 간격 */
+    grid-template-columns: repeat(2, 1fr); /* 2열로 배치 */
+    gap: 16px;
     width: 100%;
-    max-width: 500px; /* 필요에 따라 조정 */
-    margin: 0 auto;   /* 가운데 정렬 */
+    padding: 0 16px; /* 좌우 여백만 살짝 주기 */
+    box-sizing: border-box;
 }
 
         @media (max-width: 768px) {
