@@ -141,28 +141,30 @@
             -webkit-tap-highlight-color: transparent; /* 모바일 터치 시 버튼 자국 없애기 */
         }
 
-        .pdf-button {
-            padding: 8px 16px;
-            background-color: #333;
-            color: #fff;
-            border: 2px solid #333;
-            border-radius: 8px;
-            font-size: 14px;
-            height: 35px;
-            width: calc(50% - 16px); /* 2개씩 정렬, 여백 고려 */
-            margin: 8px;
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-        }
+.pdf-button {
+    flex: 0 0 calc(50% - 16px);  /* 항상 2개씩 정렬되도록 너비 설정 */
+    height: 45px;
+    background-color: #333;
+    color: #fff;
+    border: 2px solid #333;
+    border-radius: 8px;
+    font-size: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
+}
 
-
-        .pdf-buttons-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-        }
+.pdf-buttons-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center; /* 가운데 정렬 */
+    gap: 16px;               /* 버튼 사이 간격 일정하게 */
+}
 
         @media (max-width: 768px) {
             .container {
