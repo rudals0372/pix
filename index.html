@@ -140,9 +140,7 @@
             cursor: pointer;
             -webkit-tap-highlight-color: transparent; /* 모바일 터치 시 버튼 자국 없애기 */
         }
-
 .pdf-button {
-    flex: 0 0 calc(50% - 16px);  /* 항상 2개씩 정렬되도록 너비 설정 */
     height: 45px;
     background-color: #333;
     color: #fff;
@@ -156,14 +154,18 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    width: 100%; /* 그리드 셀 전체 너비 차지 */
     box-sizing: border-box;
 }
 
+
 .pdf-buttons-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center; /* 가운데 정렬 */
-    gap: 16px;               /* 버튼 사이 간격 일정하게 */
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 두 개씩 정렬 */
+    gap: 16px; /* 버튼 간 간격 */
+    width: 100%;
+    max-width: 500px; /* 필요에 따라 조정 */
+    margin: 0 auto;   /* 가운데 정렬 */
 }
 
         @media (max-width: 768px) {
