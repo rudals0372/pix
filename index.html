@@ -160,11 +160,11 @@
 
 .pdf-buttons-container {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* 2열 */
-    gap: 8px; /* 버튼 사이 간격만 살짝 */
-    width: 100%;
-    padding: 0; /* 좌우 여백 제거 */
-    margin: 0;  /* 중앙 정렬 제거 */
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    width: 100vw; /* 전체 화면 너비 사용 */
+    padding: 0 10px; /* 좌우 살짝 여백만 */
+    box-sizing: border-box;
 }
 
         @media (max-width: 768px) {
