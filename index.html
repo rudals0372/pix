@@ -6,179 +6,89 @@
     <title>MJ81</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
-    <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #f9f9f9;
-            margin: 0;
-            padding: 0;
-            color: #333;
-        }
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+<style>
+    body {
+        font-family: 'Noto Sans KR', sans-serif;
+        background-color: #f4f6f8;
+        margin: 0;
+        padding: 0;
+        color: #2c3e50;
+    }
 
-        /* 로그인 화면 스타일 */
-        .login-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #f9f9f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-        }
+    .login-screen {
+        background-color: #f4f6f8;
+    }
 
-        .login-box {
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            display: flex;
-            flex-direction: column;
-            width: 300px;
-            text-align: center;
-        }
+    .login-box {
+        background-color: #ffffff;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
 
-        .login-box input {
-            margin: 10px 0;
-            padding: 10px;
-            font-size: 16px;
-        }
+    .login-box button {
+        background-color: #2c3e50;
+    }
 
-        .login-box button {
-            padding: 10px;
-            font-size: 16px;
-            background-color: #333;
-            color: white;
-            border: none;
-            cursor: pointer;
-            margin-top: 10px;
-            border-radius: 5px;
-        }
+    .login-box button:hover {
+        background-color: #1a242f;
+    }
 
-        .login-box button:hover {
-            background-color: #555;
-        }
+    h1 {
+        color: #2c3e50;
+    }
 
-        h1 {
-            text-align: center;
-            font-size: 2em;
-            margin-top: 20px;
-        }
+    .container {
+        gap: 20px;
+        padding: 30px 20px;
+    }
 
-        .container {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            padding: 20px;
-            max-width: 1000px;
-            justify-items: center;
-            align-items: center;
-            margin: 0 auto;
-        }
+    .card {
+        background-color: #ffffff;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(44, 62, 80, 0.1);
+        width: 140px;
+        height: 190px;
+    }
 
-        .card {
-            background-color: #fff;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            width: 130px;
-            height: 190px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            position: relative;
-            margin: 0 auto;
-        }
+    .card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 10px 25px rgba(44, 62, 80, 0.2);
+    }
 
-        .card i {
-            font-size: 40px;
-            margin-top: 40px;
-            margin-bottom: 15px;
-        }
+    .card i {
+        font-size: 40px;
+        margin-top: 30px;
+        color: #2c3e50;
+    }
 
-        .card p {
-            font-size: 18px;
-            font-weight: 600;
-        }
+    .card p {
+        font-size: 16px;
+        color: #2c3e50;
+    }
 
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-        }
+    .pdf-button {
+        background-color: #2c3e50;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        padding: 10px 0;
+        transition: background-color 0.2s;
+    }
 
-        .full-screen-info {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #f9f9f9;
-            color: #333;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            text-align: center;
-            padding: 20px;
-            box-sizing: border-box;
-        }
+    .pdf-button:hover {
+        background-color: #1a242f;
+    }
 
-        .close-btn {
-            position: absolute;
-            top: 10px;
-            left: 5px;
-            background-color: transparent;
-            border: none;
-            font-size: 24px;
-            color: #333;
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent; /* 모바일 터치 시 버튼 자국 없애기 */
-        }
-.pdf-button {
-    width: 100%; /* 셀 전체 너비 */
-    height: 40px;
-    background-color: #333;
-    color: #fff;
-    border: 2px solid #333;
-    border-radius: 8px;
-    font-size: 14px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    box-sizing: border-box;
-}
+    .close-btn {
+        color: #2c3e50;
+    }
 
-.pdf-buttons-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    width: 100vw; /* 전체 화면 너비 사용 */
-    padding: 0 10px; /* 좌우 살짝 여백만 */
-    box-sizing: border-box;
-}
-
-        @media (max-width: 768px) {
-            .container {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 480px) {
-            .container {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-    </style>
+    .pdf-buttons-container {
+        gap: 12px;
+        padding: 0 16px;
+    }
+</style>
 </head>
 <body>
 
