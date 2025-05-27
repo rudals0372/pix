@@ -1,331 +1,332 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MJ81</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
-    <style>
-        body {
-            font-family: 'Pretendard', sans-serif;
-            background-color: #f0f4f8;
-            margin: 0;
-            padding: 0;
-            color: #2c3e50;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MJ81</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+  <style>
+    body {
+      font-family: 'Pretendard', sans-serif;
+      background-color: #f0f4f8;
+      margin: 0;
+      padding: 0;
+      color: #2c3e50;
+    }
 
-        .login-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #f0f4f8;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-        }
+    .login-screen {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: #f0f4f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
 
-        .login-box {
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            width: 300px;
-            text-align: center;
-        }
+    .login-box {
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      width: 300px;
+      text-align: center;
+    }
 
-        .login-box input {
-            margin: 10px 0;
-            padding: 10px;
-            font-size: 16px;
-        }
+    .login-box input {
+      margin: 10px 0;
+      padding: 10px;
+      font-size: 16px;
+    }
 
-        .login-box button {
-            padding: 10px;
-            font-size: 16px;
-            background-color: #4a90e2;
-            color: white;
-            border: none;
-            cursor: pointer;
-            margin-top: 10px;
-            border-radius: 5px;
-        }
+    .login-box button {
+      padding: 10px;
+      font-size: 16px;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin-top: 10px;
+      border-radius: 5px;
+    }
 
-        .login-box button:hover {
-            background-color: #357ABD;
-        }
+    .login-box button:hover {
+      background-color: #357ABD;
+    }
 
-        h1 {
-            text-align: center;
-            font-size: 2em;
-            margin-top: 20px;
-        }
+    h1 {
+      text-align: center;
+      font-size: 2em;
+      margin-top: 20px;
+    }
 
-        .container {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            padding: 20px;
-            max-width: 1000px;
-            justify-items: center;
-            align-items: center;
-            margin: 0 auto;
-        }
+    .container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      padding: 20px;
+      max-width: 1000px;
+      justify-items: center;
+      align-items: center;
+      margin: 0 auto;
+    }
 
-        .card {
-            background-color: #fff;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            text-align: center;
-            cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            width: 130px;
-            height: 190px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            position: relative;
-            margin: 0 auto;
-        }
+    .card {
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      width: 130px;
+      height: 190px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      margin: 0 auto;
+    }
 
-.card i.material-icons {
-    font-size: 50px;
-    margin-top: 30px;
-    margin-bottom: 10px;
-    color: #1565c0; /* 회사 블루 컬러 */
-}
+    .card i.material-icons {
+      font-size: 50px;
+      margin-top: 30px;
+      margin-bottom: 10px;
+      color: #1565c0;
+    }
 
-        .card p {
-            font-size: 18px;
-            font-weight: 600;
-            color: #2c3e50;
-        }
+    .card p {
+      font-size: 18px;
+      font-weight: 600;
+      color: #2c3e50;
+    }
 
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-        }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    }
 
-        .full-screen-info {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #f0f4f8;
-            color: #2c3e50;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            text-align: center;
-            padding: 20px;
-            box-sizing: border-box;
-        }
+    .full-screen-info {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: #f0f4f8;
+      color: #2c3e50;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      text-align: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
 
-        .close-btn {
-            position: absolute;
-            top: 10px;
-            left: 5px;
-            background-color: transparent;
-            border: none;
-            font-size: 24px;
-            color: #2c3e50;
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-        }
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      left: 5px;
+      background-color: transparent;
+      border: none;
+      font-size: 24px;
+      color: #2c3e50;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-        .pdf-button {
-            width: 100%;
-            height: 40px;
-            background-color: #4a90e2;
-            color: #fff;
-            border: 2px solid #4a90e2;
-            border-radius: 8px;
-            font-size: 14px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            box-sizing: border-box;
-        }
+    .pdf-button {
+      width: 100%;
+      height: 40px;
+      background-color: #4a90e2;
+      color: #fff;
+      border: 2px solid #4a90e2;
+      border-radius: 8px;
+      font-size: 14px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      box-sizing: border-box;
+    }
 
+    .pdf-buttons-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      width: 100vw;
+      padding: 0 10px;
+      box-sizing: border-box;
+    }
 
-        .pdf-buttons-container {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            width: 100vw;
-            padding: 0 10px;
-            box-sizing: border-box;
-        }
-@media (max-width: 480px) {
-  .card p {
-    font-size: 16px;
-  }
-}
-        
-        @media (max-width: 768px) {
-            .container {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
+    @media (max-width: 480px) {
+      .card p {
+        font-size: 16px;
+      }
+    }
 
-        @media (max-width: 480px) {
-            .container {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-    </style>
+    @media (max-width: 768px) {
+      .container {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
 </head>
 <body>
 
 <!-- 로그인 화면 -->
 <div id="login-screen" class="login-screen">
-    <div class="login-box">
-        <h2>로그인</h2>
-        <input type="text" id="username" placeholder="아이디">
-        <input type="password" id="password" placeholder="비밀번호">
-        <button onclick="login()">로그인</button>
-        <p id="login-error" style="color: red; display: none;">아이디 또는 비밀번호가 올바르지 않습니다.</p>
-    </div>
+  <div class="login-box">
+    <h2>로그인</h2>
+    <input type="text" id="username" placeholder="아이디">
+    <input type="password" id="password" placeholder="비밀번호">
+    <button onclick="login()">로그인</button>
+    <p id="login-error" style="color: red; display: none;">아이디 또는 비밀번호가 올바르지 않습니다.</p>
+  </div>
 </div>
 
-<!-- 메인 콘텐츠 -->
-<div id="main-content" style="display: none;">
-    <h1>MJ81</h1>
-    <div class="container">
-        <div class="card" data-card="1">
-            <i class="material-icons">menu_book</i>
-            <p>매뉴얼</p>
-        </div>
-        <div class="card" data-card="2">
-            <i class="material-icons">architecture</i>
-            <p>철도설계지침</p>
-        </div>
-        <div class="card" data-card="3">
-            <i class="material-icons">list_alt</i>
-            <p>점검부</p>
-        </div>
-        <div class="card" data-card="4">
-            <i class="material-icons">smart_display</i>
-            <p>동영상</p>
-        </div>
-    </div>
+<!-- 12개 장비 카드 화면 -->
+<div id="device-selection" style="display: none;">
+  <h1>장비 선택</h1>
+  <div class="container">
+    <div class="card" onclick="selectDevice(1)"><i class="material-icons">precision_manufacturing</i><p>MJ</p></div>
+    <div class="card" onclick="selectDevice(2)"><i class="material-icons">build</i><p>NS</p></div>
+    <div class="card" onclick="selectDevice(3)"><i class="material-icons">power</i><p>전원장치</p></div>
+    <div class="card" onclick="selectDevice(4)"><i class="material-icons">memory</i><p>컨트롤러</p></div>
+    <div class="card" onclick="selectDevice(5)"><i class="material-icons">camera_alt</i><p>카메라</p></div>
+    <div class="card" onclick="selectDevice(6)"><i class="material-icons">router</i><p>통신모듈</p></div>
+    <div class="card" onclick="selectDevice(7)"><i class="material-icons">lightbulb</i><p>조명장치</p></div>
+    <div class="card" onclick="selectDevice(8)"><i class="material-icons">speaker</i><p>알림장치</p></div>
+    <div class="card" onclick="selectDevice(9)"><i class="material-icons">settings_input_component</i><p>I/O모듈</p></div>
+    <div class="card" onclick="selectDevice(10)"><i class="material-icons">storage</i><p>데이터저장</p></div>
+    <div class="card" onclick="selectDevice(11)"><i class="material-icons">gps_fixed</i><p>위치센서</p></div>
+    <div class="card" onclick="selectDevice(12)"><i class="material-icons">security</i><p>보안장치</p></div>
+  </div>
+</div>
 
-    <div id="full-screen-info" class="full-screen-info">
-        <button class="close-btn" onclick="closeFullScreen()">
-            <i class="material-icons">arrow_back</i>
-        </button>
-        <div id="full-screen-text"></div>
+<!-- MJ 콘텐츠 -->
+<div id="main-content" style="display: none;">
+  <button class="close-btn" onclick="goBackToDeviceSelection()">
+    <i class="material-icons">arrow_back</i>
+  </button>
+  <h1>MJ81</h1>
+  <div class="container">
+    <div class="card" data-card="1">
+      <i class="material-icons">menu_book</i>
+      <p>매뉴얼</p>
     </div>
+    <div class="card" data-card="3">
+      <i class="material-icons">list_alt</i>
+      <p>점검부</p>
+    </div>
+  </div>
+
+  <div id="full-screen-info" class="full-screen-info">
+    <button class="close-btn" onclick="closeFullScreen()">
+      <i class="material-icons">arrow_back</i>
+    </button>
+    <div id="full-screen-text"></div>
+  </div>
 </div>
 
 <script>
-    function login() {
-        const id = document.getElementById('username').value;
-        const pw = document.getElementById('password').value;
+  function login() {
+    const id = document.getElementById('username').value;
+    const pw = document.getElementById('password').value;
 
-        if (id === 'sign' && pw === '7788') {
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('main-content').style.display = 'block';
-        } else {
-            document.getElementById('login-error').style.display = 'block';
-        }
+    if (id === 'sign' && pw === '7788') {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('device-selection').style.display = 'block';
+    } else {
+      document.getElementById('login-error').style.display = 'block';
     }
+  }
 
-    const cardData = {
-        1: {
-            title: '매뉴얼',
-            content: '',
-            pdfUrls: [
-                { url: 'https://raw.githubusercontent.com/rudals0372/k/main/docs/검사기준.pdf', name: '검사기준' },
-                { url: 'https://raw.githubusercontent.com/rudals0372/k/main/docs/노스가동매뉴얼.pdf', name: '노스가동 매뉴얼' },
-                { url: 'https://raw.githubusercontent.com/rudals0372/k/main/docs/설치방법.pdf', name: '설치방법' },
-                { url: 'https://raw.githubusercontent.com/rudals0372/k/main/docs/유지보수매뉴얼.pdf', name: '유지보수 매뉴얼' },
-                { url: 'https://raw.githubusercontent.com/rudals0372/k/main/docs/유지보수방법.pdf', name: '유지보수 방법' }
-            ],
-            type: 'pdf'
-        },
-        2: {
-            title: '철도설계지침',
-            content: '',
-            pdfUrls: [
-                { url: 'https://raw.githubusercontent.com/rudals0372/k/main/docs/1.pdf', name: '선로전환기 기능' },
-                { url: 'https://raw.githubusercontent.com/rudals0372/k/main/docs/2.pdf', name: '선로전환기 설치' },
-            ],
-            type: 'pdf'
-        },
-        4: {
-            title: '밀착검지기 동영상',
-            content: '',
-            videoUrl: 'https://github.com/rudals0372/k/raw/main/밀착동영상.mp4',
-            type: 'video'
-        }
-    };
+  function selectDevice(number) {
+    if (number === 1) {
+      document.getElementById('device-selection').style.display = 'none';
+      document.getElementById('main-content').style.display = 'block';
+    } else {
+      alert(`${number}번 장비는 아직 연결되지 않았습니다.`);
+    }
+  }
 
-    document.querySelectorAll('.card').forEach(card => {
-        card.addEventListener('click', function () {
-            const cardNumber = this.getAttribute('data-card');
-            const data = cardData[cardNumber];
-            const fullScreenInfo = document.getElementById('full-screen-info');
-            const fullScreenText = document.getElementById('full-screen-text');
+  const cardData = {
+    1: {
+      title: '매뉴얼',
+      content: '',
+      pdfUrls: [
+        { url: 'https://raw.githubusercontent.com/rudals0372/k/main/docs/검사기준.pdf', name: '검사기준' },
+        { url: 'https://raw.githubusercontent.com/rudals0372/k/main/docs/노스가동매뉴얼.pdf', name: '노스가동 매뉴얼' },
+        { url: 'https://raw.githubusercontent.com/rudals0372/k/main/docs/설치방법.pdf', name: '설치방법' },
+        { url: 'https://raw.githubusercontent.com/rudals0372/k/main/docs/유지보수매뉴얼.pdf', name: '유지보수 매뉴얼' },
+        { url: 'https://raw.githubusercontent.com/rudals0372/k/main/docs/유지보수방법.pdf', name: '유지보수 방법' }
+      ],
+      type: 'pdf'
+    },
+    3: {
+      title: '점검부',
+      content: '',
+      pdfUrls: [
+        { url: 'https://raw.githubusercontent.com/rudals0372/k/main/docs/1.pdf', name: '점검부1' },
+        { url: 'https://raw.githubusercontent.com/rudals0372/k/main/docs/2.pdf', name: '점검부2' },
+      ],
+      type: 'pdf'
+    }
+  };
 
-            if (data) {
-                if (data.type === 'pdf') {
-                    let pdfButtons = '';
-                    data.pdfUrls.forEach(item => {
-                        pdfButtons += `
-                            <button onclick="openPDF('${item.url}')" class="pdf-button">${item.name}</button>
-                        `;
-                    });
+  document.querySelectorAll('.card[data-card]').forEach(card => {
+    card.addEventListener('click', function () {
+      const cardNumber = this.getAttribute('data-card');
+      const data = cardData[cardNumber];
+      const fullScreenInfo = document.getElementById('full-screen-info');
+      const fullScreenText = document.getElementById('full-screen-text');
 
-                    fullScreenText.innerHTML = `
-                        <h2>${data.title}</h2>
-                        <p>${data.content}</p>
-                        <div class="pdf-buttons-container">
-                            ${pdfButtons}
-                        </div>
-                    `;
-                } else if (data.type === 'video') {
-                    fullScreenText.innerHTML = `
-                        <h2>${data.title}</h2>
-                        <video controls width="100%" height="auto">
-                            <source src="${data.videoUrl}" type="video/mp4">
-                            브라우저가 비디오를 지원하지 않습니다.
-                        </video>
-                    `;
-                }
-
-                fullScreenInfo.style.display = 'flex';
-
-                history.pushState(null, null, window.location.href);
-                window.onpopstate = function () {
-                    closeFullScreen();
-                };
-            }
+      if (data && data.type === 'pdf') {
+        let pdfButtons = '';
+        data.pdfUrls.forEach(item => {
+          pdfButtons += `
+            <button onclick="openPDF('${item.url}')" class="pdf-button">${item.name}</button>
+          `;
         });
+
+        fullScreenText.innerHTML = `
+          <h2>${data.title}</h2>
+          <p>${data.content}</p>
+          <div class="pdf-buttons-container">
+            ${pdfButtons}
+          </div>
+        `;
+
+        fullScreenInfo.style.display = 'flex';
+        history.pushState(null, null, window.location.href);
+        window.onpopstate = function () {
+          closeFullScreen();
+        };
+      }
     });
+  });
 
-    function openPDF(url) {
-        const viewerUrl = `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(url)}`;
-        window.open(viewerUrl, '_blank');
-    }
+  function openPDF(url) {
+    const viewerUrl = `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(url)}`;
+    window.open(viewerUrl, '_blank');
+  }
 
-    function closeFullScreen() {
-        document.getElementById('full-screen-info').style.display = 'none';
-    }
+  function closeFullScreen() {
+    document.getElementById('full-screen-info').style.display = 'none';
+  }
+
+  function goBackToDeviceSelection() {
+    document.getElementById('main-content').style.display = 'none';
+    document.getElementById('device-selection').style.display = 'block';
+  }
 </script>
 
 </body>
