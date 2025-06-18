@@ -206,8 +206,8 @@
     <div class="card" onclick="selectDevice(8)"><i class="material-icons">speaker</i><p>알림장치</p></div>
     <div class="card" onclick="selectDevice(9)"><i class="material-icons">settings_input_component</i><p>I/O모듈</p></div>
     <div class="card" onclick="selectDevice(10)"><i class="material-icons">storage</i><p>데이터저장</p></div>
-    <div class="card" onclick="selectDevice(11)"><i class="material-icons">contact_phone</i><p>비상연락망</p></div>
-    <div class="card" onclick="selectDevice(12)"><i class="material-icons">inventory</i><p>자재현황</p></div>
+    <div class="card" onclick="selectDevice(11)"><i class="material-icons">gps_fixed</i><p>위치센서</p></div>
+    <div class="card" onclick="selectDevice(12)"><i class="material-icons">security</i><p>보안장치</p></div>
   </div>
 </div>
 
@@ -227,32 +227,15 @@
       <p>점검부</p>
     </div>
   </div>
-  
-<!-- 비상연락망 콘텐츠 -->
-<div id="contact-content" style="display: none;">
-  <button class="close-btn" onclick="goBackToDeviceSelection()">
-    <i class="material-icons">arrow_back</i>
-  </button>
-  <h1>비상연락망</h1>
-  <div style="padding: 20px; text-align: left;">
-    <!-- 여기에 자유롭게 연락망 내용 작성 -->
-    <p>예시: 유지보수 책임자 - 홍길동 (010-1234-5678)</p>
-    <p>예시: 야간 담당자 - 김유진 (010-9876-5432)</p>
+
+  <div id="full-screen-info" class="full-screen-info">
+    <button class="close-btn" onclick="closeFullScreen()">
+      <i class="material-icons">arrow_back</i>
+    </button>
+    <div id="full-screen-text"></div>
   </div>
 </div>
 
-<!-- 자재현황 콘텐츠 -->
-<div id="material-content" style="display: none;">
-  <button class="close-btn" onclick="goBackToDeviceSelection()">
-    <i class="material-icons">arrow_back</i>
-  </button>
-  <h1>자재현황</h1>
-  <div style="padding: 20px; text-align: left;">
-    <!-- 여기에 자유롭게 자재 목록 내용 작성 -->
-    <p>예시: MJ 교체부품 - 3개 (창고 A)</p>
-    <p>예시: 전원장치 예비 - 2개 (창고 B)</p>
-  </div>
-</div>
 <script>
   function login() {
     const id = document.getElementById('username').value;
@@ -270,17 +253,9 @@
     if (number === 1) {
       document.getElementById('device-selection').style.display = 'none';
       document.getElementById('main-content').style.display = 'block';
-    } else if (number === 11) {
-    document.getElementById('device-selection').style.display = 'none';
-    document.getElementById('contact-content').style.display = 'block';
-  } else if (number === 12) {
-    document.getElementById('device-selection').style.display = 'none';
-    document.getElementById('material-content').style.display = 'block';
-  } else {
-    alert(`${number}번 장비는 아직 연결되지 않았습니다.`);
-  }
-
-    
+    } else {
+      alert(`${number}번 장비는 아직 연결되지 않았습니다.`);
+    }
   }
 
   const cardData = {
@@ -338,38 +313,7 @@
       }
     });
   });
-  const pdfInput = document.getElementById('pdfInput');
-  const pdfFrame = document.getElementById('pdfFrame');
 
-  // PDF 선택 시 바로 미리보기
-  pdfInput.addEventListener('change', function () {
-    const file = this.files[0];
-    if (file && file.type === 'application/pdf') {
-      const blobURL = URL.createObjectURL(file);
-      pdfFrame.src = blobURL;
-      sessionStorage.setItem('tempPDF', blobURL);  // 임시 저장
-    }
-  });
-
-  // 저장 버튼 클릭 시 localStorage에 저장
-  function savePDF() {
-    const tempPDF = sessionStorage.getItem('tempPDF');
-    if (tempPDF) {
-      localStorage.setItem('savedPDF', tempPDF);
-      alert('PDF가 저장되었습니다.');
-    } else {
-      alert('저장할 PDF가 없습니다.');
-    }
-  }
-
-  // 페이지 로드 시 저장된 PDF 불러오기
-  window.addEventListener('load', function () {
-    const savedPDF = localStorage.getItem('savedPDF');
-    if (savedPDF) {
-      pdfFrame.src = savedPDF;
-    }
-  });
-  
   function openPDF(url) {
     const viewerUrl = `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(url)}`;
     window.open(viewerUrl, '_blank');
@@ -380,11 +324,9 @@
   }
 
   function goBackToDeviceSelection() {
-  document.getElementById('main-content').style.display = 'none';
-  document.getElementById('contact-content').style.display = 'none';
-  document.getElementById('material-content').style.display = 'none';
-  document.getElementById('device-selection').style.display = 'block';
-}
+    document.getElementById('main-content').style.display = 'none';
+    document.getElementById('device-selection').style.display = 'block';
+  }
 </script>
 
 </body>
