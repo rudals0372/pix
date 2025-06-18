@@ -206,8 +206,8 @@
     <div class="card" onclick="selectDevice(8)"><i class="material-icons">speaker</i><p>알림장치</p></div>
     <div class="card" onclick="selectDevice(9)"><i class="material-icons">settings_input_component</i><p>I/O모듈</p></div>
     <div class="card" onclick="selectDevice(10)"><i class="material-icons">storage</i><p>데이터저장</p></div>
-    <div class="card" onclick="selectDevice(11)"><i class="material-icons">gps_fixed</i><p>위치센서</p></div>
-    <div class="card" onclick="selectDevice(12)"><i class="material-icons">security</i><p>보안장치</p></div>
+    <div class="card" onclick="selectDevice(11)"><i class="material-icons">gps_fixed</i><p>비상연락망</p></div>
+    <div class="card" onclick="selectDevice(12)"><i class="material-icons">security</i><p>자재현황</p></div>
   </div>
 </div>
 
@@ -227,21 +227,7 @@
       <p>점검부</p>
     </div>
   </div>
-<!-- 위치센서 화면 -->
-<div id="device-11-content" class="full-screen-info">
-  <button class="close-btn" onclick="goBackToDeviceSelection()">
-    <i class="material-icons">arrow_back</i>
-  </button>
-  <h1>위치센서</h1>
-</div>
 
-<!-- 보안장치 화면 -->
-<div id="device-12-content" class="full-screen-info">
-  <button class="close-btn" onclick="goBackToDeviceSelection()">
-    <i class="material-icons">arrow_back</i>
-  </button>
-  <h1>보안장치</h1>
-</div>
   <div id="full-screen-info" class="full-screen-info">
     <button class="close-btn" onclick="closeFullScreen()">
       <i class="material-icons">arrow_back</i>
@@ -249,7 +235,21 @@
     <div id="full-screen-text"></div>
   </div>
 </div>
+<!-- 위치센서 화면 -->
+<div id="device-11-content" class="full-screen-info">
+  <button class="close-btn" onclick="goBackToDeviceSelection()">
+    <i class="material-icons">arrow_back</i>
+  </button>
+  <h1>비상연락망</h1>
+</div>
 
+<!-- 보안장치 화면 -->
+<div id="device-12-content" class="full-screen-info">
+  <button class="close-btn" onclick="goBackToDeviceSelection()">
+    <i class="material-icons">arrow_back</i>
+  </button>
+  <h1>자재현황</h1>
+</div>
 <script>
   function login() {
     const id = document.getElementById('username').value;
