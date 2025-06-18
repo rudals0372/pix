@@ -227,7 +227,21 @@
       <p>점검부</p>
     </div>
   </div>
+<!-- 위치센서 화면 -->
+<div id="device-11-content" class="full-screen-info">
+  <button class="close-btn" onclick="goBackToDeviceSelection()">
+    <i class="material-icons">arrow_back</i>
+  </button>
+  <h1>위치센서</h1>
+</div>
 
+<!-- 보안장치 화면 -->
+<div id="device-12-content" class="full-screen-info">
+  <button class="close-btn" onclick="goBackToDeviceSelection()">
+    <i class="material-icons">arrow_back</i>
+  </button>
+  <h1>보안장치</h1>
+</div>
   <div id="full-screen-info" class="full-screen-info">
     <button class="close-btn" onclick="closeFullScreen()">
       <i class="material-icons">arrow_back</i>
@@ -249,14 +263,20 @@
     }
   }
 
-  function selectDevice(number) {
-    if (number === 1) {
-      document.getElementById('device-selection').style.display = 'none';
-      document.getElementById('main-content').style.display = 'block';
-    } else {
-      alert(`${number}번 장비는 아직 연결되지 않았습니다.`);
-    }
+function selectDevice(number) {
+  document.getElementById('device-selection').style.display = 'none';
+
+  if (number === 1) {
+    document.getElementById('main-content').style.display = 'block';
+  } else if (number === 11) {
+    document.getElementById('device-11-content').style.display = 'flex';
+  } else if (number === 12) {
+    document.getElementById('device-12-content').style.display = 'flex';
+  } else {
+    alert(`${number}번 장비는 아직 연결되지 않았습니다.`);
+    document.getElementById('device-selection').style.display = 'block';
   }
+}
 
   const cardData = {
     1: {
@@ -323,10 +343,12 @@
     document.getElementById('full-screen-info').style.display = 'none';
   }
 
-  function goBackToDeviceSelection() {
-    document.getElementById('main-content').style.display = 'none';
-    document.getElementById('device-selection').style.display = 'block';
-  }
+function goBackToDeviceSelection() {
+  document.getElementById('main-content').style.display = 'none';
+  document.getElementById('device-11-content').style.display = 'none';
+  document.getElementById('device-12-content').style.display = 'none';
+  document.getElementById('device-selection').style.display = 'block';
+}
 </script>
 
 </body>
