@@ -227,7 +227,33 @@
       <p>점검부</p>
     </div>
   </div>
+  
+<!-- 비상연락망 콘텐츠 -->
+<div id="contact-content" style="display: none;">
+  <button class="close-btn" onclick="goBackToDeviceSelection()">
+    <i class="material-icons">arrow_back</i>
+  </button>
+  <h1>비상연락망</h1>
+  <div style="padding: 20px; text-align: left;">
+    <!-- 여기에 자유롭게 연락망 내용 작성 -->
+    <p>예시: 유지보수 책임자 - 홍길동 (010-1234-5678)</p>
+    <p>예시: 야간 담당자 - 김유진 (010-9876-5432)</p>
+  </div>
+</div>
 
+<!-- 자재현황 콘텐츠 -->
+<div id="material-content" style="display: none;">
+  <button class="close-btn" onclick="goBackToDeviceSelection()">
+    <i class="material-icons">arrow_back</i>
+  </button>
+  <h1>자재현황</h1>
+  <div style="padding: 20px; text-align: left;">
+    <!-- 여기에 자유롭게 자재 목록 내용 작성 -->
+    <p>예시: MJ 교체부품 - 3개 (창고 A)</p>
+    <p>예시: 전원장치 예비 - 2개 (창고 B)</p>
+  </div>
+</div>
+  
   <div id="full-screen-info" class="full-screen-info">
     <button class="close-btn" onclick="closeFullScreen()">
       <i class="material-icons">arrow_back</i>
@@ -253,9 +279,17 @@
     if (number === 1) {
       document.getElementById('device-selection').style.display = 'none';
       document.getElementById('main-content').style.display = 'block';
-    } else {
-      alert(`${number}번 장비는 아직 연결되지 않았습니다.`);
-    }
+    } else if (number === 11) {
+    document.getElementById('device-selection').style.display = 'none';
+    document.getElementById('contact-content').style.display = 'block';
+  } else if (number === 12) {
+    document.getElementById('device-selection').style.display = 'none';
+    document.getElementById('material-content').style.display = 'block';
+  } else {
+    alert(`${number}번 장비는 아직 연결되지 않았습니다.`);
+  }
+
+    
   }
 
   const cardData = {
