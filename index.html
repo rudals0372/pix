@@ -241,6 +241,11 @@
     <i class="material-icons">arrow_back</i>
   </button>
   <h1>비상연락망</h1>
+    <input type="file" id="pdfInput" accept="application/pdf">
+  <button onclick="savePDF()">저장</button>
+  <div id="pdfViewer" style="margin-top: 20px;">
+    <iframe id="pdfFrame" width="100%" height="600px" style="border: 1px solid #ccc;"></iframe>
+  </div>
 </div>
 
 <!-- 보안장치 화면 -->
@@ -349,6 +354,38 @@ function goBackToDeviceSelection() {
   document.getElementById('device-12-content').style.display = 'none';
   document.getElementById('device-selection').style.display = 'block';
 }
+    const pdfInput = document.getElementById('pdfInput');
+  const pdfFrame = document.getElementById('pdfFrame');
+
+  // PDF 선택 시 바로 미리보기
+  pdfInput.addEventListener('change', function () {
+    const file = this.files[0];
+    if (file && file.type === 'application/pdf') {
+      const blobURL = URL.createObjectURL(file);
+      pdfFrame.src = blobURL;
+      sessionStorage.setItem('tempPDF', blobURL);  // 임시 저장
+    }
+  });
+
+  // 저장 버튼 클릭 시 localStorage에 저장
+  function savePDF() {
+    const tempPDF = sessionStorage.getItem('tempPDF');
+    if (tempPDF) {
+      localStorage.setItem('savedPDF', tempPDF);
+      alert('PDF가 저장되었습니다.');
+    } else {
+      alert('저장할 PDF가 없습니다.');
+    }
+  }
+
+  // 페이지 로드 시 저장된 PDF 불러오기
+  window.addEventListener('load', function () {
+    const savedPDF = localStorage.getItem('savedPDF');
+    if (savedPDF) {
+      pdfFrame.src = savedPDF;
+    }
+  });
+
 </script>
 
 </body>
