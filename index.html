@@ -418,13 +418,9 @@ function openSavedPDF() {
   const blob = new Blob([bytes], { type: 'application/pdf' });
   const blobUrl = URL.createObjectURL(blob);
 
-  // 히스토리에 상태 추가 → 뒤로가기 대비
-  history.pushState({ page: 'pdf-opened' }, '', '');
-
-  // PDF를 새 창에서 열기
+  // 브라우저 새 탭에서 열기
   window.open(blobUrl, '_blank');
 }
-
     // 로그인 상태 확인
     const isLoggedIn = sessionStorage.getItem('isLoggedIn');
     if (isLoggedIn === 'true') {
