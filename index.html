@@ -238,26 +238,25 @@
   </div>
 </div>
 <!-- 위치센서 화면 -->
-<div id="device-11-content" class="full-screen-info" style="display: none; flex-direction: column; align-items: center; position: relative;">
-  <!-- 새창 나가기 버튼 -->
+<div id="device-11-content" class="full-screen-info" style="display: none; flex-direction: column; align-items: center;">
+  <!-- 뒤로가기 버튼 -->
   <button class="close-btn" onclick="goBackToDeviceSelection()">
     <i class="material-icons">arrow_back</i>
   </button>
 
-  <!-- 상단 바 (제목 + 버튼) -->
-  <div style="width: 100%; display: flex; align-items: center; justify-content: center; position: relative; padding: 10px 20px; box-sizing: border-box;">
-    <!-- 제목: 가운데 정렬 -->
-    <h2 style="margin: 0 auto; font-size: 22px;">비상연락망</h2>
+  <!-- 제목: 위쪽 가운데 단독 줄 -->
+  <div style="width: 100%; text-align: center; margin-top: 10px;">
+    <h2 style="margin: 10px 0;">비상연락망</h2>
+  </div>
 
-    <!-- 버튼: 오른쪽 위 정렬 -->
-    <div style="position: absolute; right: 20px; display: flex; gap: 8px;">
-      <input type="file" id="pdfInput" accept="application/pdf">
-      <button onclick="savePDF()">저장</button>
-    </div>
+  <!-- 파일 선택 & 저장 버튼: 위쪽 오른쪽 정렬 -->
+  <div style="width: 100%; display: flex; justify-content: flex-end; padding: 0 20px; box-sizing: border-box; margin-bottom: 10px; gap: 10px;">
+    <input type="file" id="pdfInput" accept="application/pdf">
+    <button onclick="savePDF()">저장</button>
   </div>
 
   <!-- PDF 미리보기 -->
-  <div id="pdfViewer" style="width: 100%; height: calc(100vh - 100px); padding: 0 20px;">
+  <div id="pdfViewer" style="width: 100%; height: calc(100vh - 160px); padding: 0 20px;">
     <iframe id="pdfFrame" width="100%" height="100%" style="border: 1px solid #ccc;"></iframe>
   </div>
 </div>
