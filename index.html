@@ -165,54 +165,6 @@
       padding: 0 10px;
       box-sizing: border-box;
     }
-#device-11-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 20px 10px 0;
-  text-align: center;
-  box-sizing: border-box;
-  position: relative;
-}
-
-.pdf-controls {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  max-width: 1000px;
-  align-items: center;
-  margin-top: 10px;
-}
-
-.pdf-controls .left-buttons,
-.pdf-controls .right-buttons {
-  display: flex;
-  gap: 10px;
-}
-
-.pdf-controls button,
-.pdf-controls input[type="file"] {
-  padding: 6px 12px;
-  font-size: 14px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  background-color: #fff;
-  cursor: pointer;
-}
-
-#pdfViewer {
-  width: 100%;
-  max-width: 1000px;
-  margin-top: 20px;
-  box-sizing: border-box;
-}
-
-#pdfFrame {
-  width: 100%;
-  height: 80vh;
-  border: 1px solid #ccc;
-}
 
     @media (max-width: 480px) {
       .card p {
@@ -289,13 +241,10 @@
     <i class="material-icons">arrow_back</i>
   </button>
   <h2>비상연락망</h2>
-<div class="pdf-controls">
-  <div class="left-buttons">
-    <button onclick="openPDFInNewTab()">새창으로 보기</button>
-  </div>
-  <div class="right-buttons">
     <input type="file" id="pdfInput" accept="application/pdf">
-    <button onclick="savePDF()">저장</button>
+  <button onclick="savePDF()">저장</button>
+  <div id="pdfViewer" style="margin-top: 20px;">
+    <iframe id="pdfFrame" width="100%" height="600px" style="border: 1px solid #ccc;"></iframe>
   </div>
 </div>
 
@@ -389,18 +338,7 @@
       }
     });
   });
-function openPDFInNewTab() {
-  const savedPDF = localStorage.getItem('savedPDF');
-  if (savedPDF) {
-    const newWindow = window.open();
-    newWindow.document.write(`
-      <iframe src="${savedPDF}" style="width:100%; height:100%;" frameborder="0"></iframe>
-    `);
-    
-  } else {
-    alert('저장된 PDF가 없습니다.');
-  }
-}
+
   function openPDF(url) {
     const viewerUrl = `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(url)}`;
     window.open(viewerUrl, '_blank');
@@ -451,5 +389,3 @@ function openPDFInNewTab() {
     }
   });
 </script>
-</body>
-</html>
