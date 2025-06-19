@@ -400,22 +400,23 @@
     }
   }
 function openSavedPDF() {
-  const base64PDF = localStorage.getItem('savedPDF');
-  if (!base64PDF) {
+  const base64 = localStorage.getItem('savedPDF');
+
+  if (!base64 || !base64.startsWith('data:application/pdf;base64,')) {
     alert('저장된 PDF가 없습니다.');
     return;
   }
 
-  // base64 → Blob 변환
-  const byteCharacters = atob(base64PDF.split(',')[1]);
-  const byteNumbers = Array.from(byteCharacters, c => c.charCodeAt(0));
-  const byteArray = new Uint8Array(byteNumbers);
-  const blob = new Blob([byteArray], { type: 'application/pdf' });
+  // base64를 encode해서 뷰어에 넘길 준비
+  const encodedPDF = encodeURIComponent(base64);
 
-  const blobUrl = URL.createObjectURL(blob);
-  const viewerUrl = `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(blobUrl)}`;
+  // Mozilla 공식 PDF.js 뷰어 주소
+  const viewerUrl = `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodedPDF}`;
+
+  // 새 창으로 열기
   window.open(viewerUrl, '_blank');
 }
+
   window.addEventListener('load', function () {
     const savedPDF = localStorage.getItem('savedPDF');
     if (savedPDF) {
