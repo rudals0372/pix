@@ -252,6 +252,7 @@
   <!-- 파일 선택 & 저장 버튼: 위쪽 오른쪽 정렬 -->
   <div style="width: 100%; display: flex; justify-content: flex-end; padding: 0 20px; box-sizing: border-box; margin-bottom: 10px; gap: 10px;">
     <input type="file" id="pdfInput" accept="application/pdf">
+    <button onclick="openSavedPDF()" style="margin-right: 8px;">열기</button>
     <button onclick="savePDF()">저장</button>
   </div>
 
@@ -398,7 +399,23 @@
       alert('저장할 PDF가 없습니다.');
     }
   }
+function openSavedPDF() {
+  const base64PDF = localStorage.getItem('savedPDF');
+  if (!base64PDF) {
+    alert('저장된 PDF가 없습니다.');
+    return;
+  }
 
+  // base64 → Blob 변환
+  const byteCharacters = atob(base64PDF.split(',')[1]);
+  const byteNumbers = Array.from(byteCharacters, c => c.charCodeAt(0));
+  const byteArray = new Uint8Array(byteNumbers);
+  const blob = new Blob([byteArray], { type: 'application/pdf' });
+
+  const blobUrl = URL.createObjectURL(blob);
+  const viewerUrl = `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(blobUrl)}`;
+  window.open(viewerUrl, '_blank');
+}
   window.addEventListener('load', function () {
     const savedPDF = localStorage.getItem('savedPDF');
     if (savedPDF) {
