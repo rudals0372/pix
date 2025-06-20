@@ -726,7 +726,7 @@ function renderMaterialList() {
       if (confirm(`'${item}' 자재를 삭제할까요?`)) {
         // materialData에서 삭제
         materialData[currentTeam][currentWarehouse].splice(index, 1);
-        saveMaterialData();
+        
         renderMaterialList();
       }
     };
@@ -783,7 +783,7 @@ function confirmAddMaterial() {
 
   // 추가
   materials.push({ item: name, quantity: qty });
-  saveMaterialData();
+  
   renderMaterialList();
 
   // 입력폼 숨기기
