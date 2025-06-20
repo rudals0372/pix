@@ -288,7 +288,18 @@
 
   <!-- 자재 리스트 화면 -->
   <div id="material-list" style="width: 100%; display: none; flex-direction: column;">
+<!-- 자재 리스트 화면 내부, #material-list 안에 아래 버튼 추가 -->
+<button id="addMaterialBtn" style="margin: 10px 0; padding: 10px; font-size: 16px; background-color: #27ae60; color: white; border: none; border-radius: 6px; cursor: pointer;">
+  자재 추가
+</button>
 
+<!-- 자재 추가 입력폼 (초기엔 숨김) -->
+<div id="addMaterialForm" style="display:none; margin-bottom: 10px;">
+  <input type="text" id="newMaterialName" placeholder="자재 이름" style="padding: 6px; font-size: 14px; width: 150px; margin-right: 8px;">
+  <input type="number" id="newMaterialQty" placeholder="수량" min="0" style="padding: 6px; font-size: 14px; width: 80px; margin-right: 8px;">
+  <button onclick="confirmAddMaterial()" style="padding: 6px 12px; background-color: #2980b9; color: white; border: none; border-radius: 4px; cursor: pointer;">확인</button>
+  <button onclick="cancelAddMaterial()" style="padding: 6px 12px; background-color: #aaa; color: white; border: none; border-radius: 4px; cursor: pointer;">취소</button>
+</div>
     <h2 id="material-list-title">자재 현황</h2>
     <div id="material-items" style="flex-grow: 1; overflow-y: auto;"></div>
     <button onclick="saveMaterialData()" style="margin-top: 10px; padding: 10px; font-size: 16px; background-color: #4a90e2; color: white; border: none; border-radius: 6px; cursor: pointer;">저장</button>
@@ -674,5 +685,104 @@ function goBackInMaterialFlow() {
     document.getElementById('device-12-content').style.display = 'none';
     document.getElementById('device-selection').style.display = 'block';
   }
+}
+  // renderMaterialList() 함수 수정 — 자재 항목마다 삭제 버튼 추가
+function renderMaterialList() {
+  const container = document.getElementById('material-items');
+  container.innerHTML = '';
+
+  const materials = materialData[currentTeam][currentWarehouse] || [];
+  document.getElementById('material-list-title').textContent = `${currentTeam.toUpperCase()} - ${currentWarehouse} 자재 현황`;
+
+  materials.forEach(({ item, quantity }, index) => {
+    const row = document.createElement('div');
+    row.style.display = 'flex';
+    row.style.justifyContent = 'space-between';
+    row.style.alignItems = 'center';
+    row.style.marginBottom = '8px';
+
+    const label = document.createElement('span');
+    label.textContent = item;
+    label.style.fontWeight = '600';
+
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.min = '0';
+    input.value = quantity;
+    input.setAttribute('data-item', item);
+    input.style.width = '60px';
+    input.style.padding = '4px';
+
+    const delBtn = document.createElement('button');
+    delBtn.textContent = '삭제';
+    delBtn.style.marginLeft = '10px';
+    delBtn.style.padding = '4px 8px';
+    delBtn.style.backgroundColor = '#e74c3c';
+    delBtn.style.color = 'white';
+    delBtn.style.border = 'none';
+    delBtn.style.borderRadius = '4px';
+    delBtn.style.cursor = 'pointer';
+    delBtn.onclick = () => {
+      if (confirm(`'${item}' 자재를 삭제할까요?`)) {
+        // materialData에서 삭제
+        materialData[currentTeam][currentWarehouse].splice(index, 1);
+        saveMaterialData();
+        renderMaterialList();
+      }
+    };
+
+    row.appendChild(label);
+    row.appendChild(input);
+    row.appendChild(delBtn);
+    container.appendChild(row);
+  });
+}
+
+// 자재 추가 버튼 클릭 이벤트
+document.getElementById('addMaterialBtn').onclick = () => {
+  document.getElementById('addMaterialForm').style.display = 'block';
+  document.getElementById('newMaterialName').value = '';
+  document.getElementById('newMaterialQty').value = '';
+  document.getElementById('newMaterialName').focus();
+};
+
+// 자재 추가 취소
+function cancelAddMaterial() {
+  document.getElementById('addMaterialForm').style.display = 'none';
+}
+
+// 자재 추가 확인
+function confirmAddMaterial() {
+  const nameInput = document.getElementById('newMaterialName');
+  const qtyInput = document.getElementById('newMaterialQty');
+  const name = nameInput.value.trim();
+  const qty = parseInt(qtyInput.value);
+
+  if (!name) {
+    alert('자재 이름을 입력해 주세요.');
+    nameInput.focus();
+    return;
+  }
+  if (isNaN(qty) || qty < 0) {
+    alert('수량은 0 이상의 숫자로 입력해 주세요.');
+    qtyInput.focus();
+    return;
+  }
+
+  // 중복 체크 (같은 이름 있으면 추가 안함)
+  const materials = materialData[currentTeam][currentWarehouse];
+  if (materials.find(m => m.item === name)) {
+    alert('이미 같은 이름의 자재가 있습니다.');
+    nameInput.focus();
+    return;
+  }
+
+  // 추가
+  materials.push({ item: name, quantity: qty });
+  saveMaterialData();
+  renderMaterialList();
+
+  // 입력폼 숨기기
+  document.getElementById('addMaterialForm').style.display = 'none';
 }
 </script>
