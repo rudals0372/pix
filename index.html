@@ -261,24 +261,32 @@
     </div>
   </div>
 
-<!-- PDF 미리보기 -->
+<!-- 비상연락망 미리보기 영역 -->
 <div id="pdfViewer" style="
   width: 100%;
   flex: 1;
   padding: 0 4px;
   box-sizing: border-box;
-  position: relative;
-  overflow: hidden;">
+  overflow: hidden;
+  position: relative;">
   
-  <iframe id="pdfFrame" width="100%" height="100%" style="border: 1px solid #ccc;"></iframe>
+  <!-- 실제 PDF 표시 -->
+  <iframe id="pdfFrame"
+          src=""
+          width="100%"
+          height="100%"
+          style="border: 1px solid #ccc;"></iframe>
 
-  <!-- 오버레이: pointer-events는 none 기본값, 클릭 시에만 일시적으로 활성화 -->
-  <div id="pdfClickOverlay" style="
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    z-index: 10;
-    pointer-events: none;"></div>
+  <!-- 투명 클릭 레이어: 클릭만 감지하고 스크롤은 통과시킴 -->
+  <div id="pdfClickOverlay"
+       style="position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              z-index: 10;
+              pointer-events: auto;">
+  </div>
 </div>
 </div>
 <!-- 자재현황 화면 -->
@@ -499,24 +507,25 @@ document.getElementById('pdfSettingIcon').addEventListener('click', () => {
     }
 
  const overlay = document.getElementById('pdfClickOverlay');
-let clickStartX = 0, clickStartY = 0;
-let clickStartTime = 0;
+let downX = 0, downY = 0, downTime = 0;
 
-overlay.style.pointerEvents = 'auto'; // 클릭만 감지하도록 한 번만 열어둠
-
-overlay.addEventListener('mousedown', (e) => {
-  clickStartX = e.clientX;
-  clickStartY = e.clientY;
-  clickStartTime = new Date().getTime();
+overlay.addEventListener('pointerdown', (e) => {
+  downX = e.clientX;
+  downY = e.clientY;
+  downTime = Date.now();
 });
 
-overlay.addEventListener('mouseup', (e) => {
-  const deltaX = Math.abs(e.clientX - clickStartX);
-  const deltaY = Math.abs(e.clientY - clickStartY);
-  const deltaTime = new Date().getTime() - clickStartTime;
+overlay.addEventListener('pointerup', (e) => {
+  const upX = e.clientX;
+  const upY = e.clientY;
+  const upTime = Date.now();
 
-  if (deltaX < 5 && deltaY < 5 && deltaTime < 300) {
-    openSavedPDF(); // 기존 함수: 새 탭으로 열기
+  const deltaX = Math.abs(upX - downX);
+  const deltaY = Math.abs(upY - downY);
+  const deltaT = upTime - downTime;
+
+  if (deltaX < 5 && deltaY < 5 && deltaT < 300) {
+    openSavedPDF(); // 클릭 시 PDF 새탭 열기
   }
 });
     // 로그인 상태 확인
