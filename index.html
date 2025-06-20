@@ -244,34 +244,41 @@
   
 <!-- 비상연락망 화면 -->
 <div id="device-11-content" class="full-screen-info" style="display: none; flex-direction: column; align-items: center;">
-  <!-- 뒤로가기 버튼 -->
-  <button class="close-btn" onclick="goBackToDeviceSelection()">
-    <i class="material-icons">arrow_back</i>
-  </button>
 
-  <!-- 제목 + 설정 아이콘 -->
-  <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; margin-top: 10px;">
-    <h2 style="margin: 10px 0;">비상연락망</h2>
-    <i class="material-icons" style="cursor: pointer;" onclick="togglePDFSetting()">settings</i>
+  <!-- 상단 바 -->
+  <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 10px 20px; box-sizing: border-box;">
+    
+    <!-- 뒤로가기 버튼 -->
+    <button class="close-btn" onclick="goBackToDeviceSelection()" style="margin: 0;">
+      <i class="material-icons">arrow_back</i>
+    </button>
+    
+    <!-- 제목 -->
+    <h2 style="margin: 0; font-size: 20px;">비상연락망</h2>
+
+    <!-- 설정 아이콘 -->
+    <button onclick="togglePdfEdit()" style="background: none; border: none; cursor: pointer;">
+      <i class="material-icons" style="font-size: 24px;">settings</i>
+    </button>
   </div>
 
-  <!-- 파일 선택 & 저장 버튼: 기본 숨김 -->
-  <div id="pdfSettingArea" style="width: 100%; display: none; justify-content: flex-end; padding: 0 20px; box-sizing: border-box; margin-bottom: 10px; gap: 10px;">
+  <!-- 파일 선택 & 저장 버튼 영역 (초기에 숨김) -->
+  <div id="pdf-edit-controls" style="width: 100%; display: none; justify-content: flex-end; padding: 0 20px; box-sizing: border-box; margin-bottom: 10px; gap: 10px;">
     <input type="file" id="pdfInput" accept="application/pdf">
     <button onclick="savePDF()">저장</button>
   </div>
 
-  <!-- PDF 미리보기 클릭 시 새 탭 열기 -->
-  <div id="pdfViewer"
-       onclick="openSavedPDF()"
-       style="width: 100%; flex: 1; padding: 0 4px; box-sizing: border-box; overflow: hidden; cursor: pointer;">
-    <iframe id="pdfFrame"
-            width="100%"
-            height="100%"
-            style="border: 1px solid #ccc; pointer-events: auto;"></iframe>
-  </div>
-</div>
+  <!-- PDF 미리보기 -->
+  <div id="pdfViewer" style="position: relative; width: 100%; flex: 1; padding: 0 4px; box-sizing: border-box; overflow: hidden;">
+    <iframe id="pdfFrame" width="100%" height="100%" style="border: 1px solid #ccc;"></iframe>
 
+    <!-- 오버레이 버튼 -->
+    <button onclick="openSavedPDF()" style="position: absolute; bottom: 10px; right: 10px; background-color: rgba(74, 144, 226, 0.9); color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 14px; cursor: pointer;">
+      🔍 전체보기
+    </button>
+  </div>
+
+</div>
 </div>
 <!-- 자재현황 화면 -->
 <div id="device-12-content" class="full-screen-info" style="display: none; flex-direction: column; padding: 20px; box-sizing: border-box;">
