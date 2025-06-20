@@ -241,34 +241,35 @@
     <div id="full-screen-text"></div>
   </div>
 </div>
-<!-- 비상연락망 화면 -->
-<div id="device-11-content" class="full-screen-info" style="display: none; flex-direction: column; align-items: center; position: relative;">
-  <!-- 🔙 뒤로가기 버튼 -->
+<div id="device-11-content" class="full-screen-info" style="display: none; flex-direction: column; align-items: center;">
+  <!-- 뒤로가기 버튼 -->
   <button class="close-btn" onclick="goBackToDeviceSelection()">
     <i class="material-icons">arrow_back</i>
   </button>
-
-  <!-- ⚙️ 설정 아이콘 (오른쪽 위) -->
-  <div style="position: absolute; top: 10px; right: 10px;">
-    <button onclick="togglePDFSettings()" style="background: none; border: none; cursor: pointer;">
-      <i class="material-icons" style="font-size: 24px;">settings</i>
-    </button>
-  </div>
 
   <!-- 제목 -->
   <div style="width: 100%; text-align: center; margin-top: 10px;">
     <h2 style="margin: 10px 0;">비상연락망</h2>
   </div>
 
-  <!-- 숨겨지는 설정 영역 -->
-  <div id="pdfSettings" style="width: 100%; display: none; justify-content: flex-end; padding: 0 20px; box-sizing: border-box; margin-bottom: 10px; gap: 10px;">
-    <input type="file" id="pdfInput" accept="application/pdf">
-    <button onclick="savePDF()">저장</button>
+  <!-- 설정 아이콘 + 버튼들 -->
+  <div style="width: 100%; display: flex; justify-content: flex-end; align-items: center; padding: 0 20px; box-sizing: border-box; margin-bottom: 10px;">
+    <i class="material-icons" id="pdfSettingIcon" style="cursor: pointer; font-size: 28px;">settings</i>
+    <div id="pdfControls" style="display: none; gap: 10px; align-items: center; margin-left: 10px;">
+      <input type="file" id="pdfInput" accept="application/pdf">
+      <button onclick="savePDF()">저장</button>
+    </div>
   </div>
 
-  <!-- PDF 미리보기 영역 -->
-  <div id="pdfViewer" style="width: 100%; flex: 1; padding: 0 4px; box-sizing: border-box; overflow: hidden;">
-    <iframe id="pdfFrame" width="100%" height="100%" style="border: 1px solid #ccc;" onclick="openSavedPDF()"></iframe>
+  <!-- PDF 미리보기 -->
+  <div id="pdfViewer" onclick="openSavedPDF()" style="
+    width: 100%;
+    flex: 1;
+    padding: 0 4px;
+    box-sizing: border-box;
+    overflow: hidden;
+    cursor: pointer;">
+    <iframe id="pdfFrame" width="100%" height="100%" style="border: 1px solid #ccc; pointer-events: none;"></iframe>
   </div>
 </div>
 <!-- 자재현황 화면 -->
@@ -430,6 +431,13 @@
   const pdfInput = document.getElementById('pdfInput');
   const pdfFrame = document.getElementById('pdfFrame');
 
+  // 설정 아이콘 클릭 시 버튼 영역 토글
+document.getElementById('pdfSettingIcon').addEventListener('click', () => {
+  const controls = document.getElementById('pdfControls');
+  controls.style.display = controls.style.display === 'none' ? 'flex' : 'none';
+});
+
+
   pdfInput.addEventListener('change', function () {
     const file = this.files[0];
     if (file && file.type === 'application/pdf') {
@@ -480,10 +488,7 @@
     if (savedPDF) {
       pdfFrame.src = savedPDF;
     }
-function togglePDFSettings() {
-  const settings = document.getElementById('pdfSettings');
-  settings.style.display = settings.style.display === 'none' ? 'flex' : 'none';
-}
+
     // 로그인 상태 확인
     const isLoggedIn = sessionStorage.getItem('isLoggedIn');
     if (isLoggedIn === 'true') {
