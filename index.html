@@ -244,20 +244,23 @@
 </div>
 <!-- 비상연락망 화면 -->
 <div id="device-11-content" class="full-screen-info" style="display: none; flex-direction: column; align-items: center; padding: 0 10px; box-sizing: border-box;">
-  
-  <!-- 상단 바: 뒤로가기 + 설정 아이콘 -->
-  <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 10px 0; box-sizing: border-box;">
-    <button class="close-btn" onclick="goBackToDeviceSelection()" style="margin-left: 5px;">
-      <i class="material-icons">arrow_back</i>
+
+  <!-- 상단 바: 뒤로가기 + 제목(가운데) + 설정 -->
+  <div style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 10px 0;">
+    <!-- 뒤로가기 -->
+    <button class="close-btn" onclick="goBackToDeviceSelection()" style="background: none; border: none;">
+      <i class="material-icons" style="font-size: 24px;">arrow_back</i>
     </button>
-    <button id="settingBtn" onclick="togglePdfEdit()" style="margin-right: 5px; background: none; border: none; cursor: pointer;">
+
+    <!-- 제목 -->
+    <div style="flex: 1; text-align: center; margin-left: -24px;"> <!-- 아이콘 너비만큼 보정 -->
+      <h2 style="margin: 0;">비상연락망</h2>
+    </div>
+
+    <!-- 설정 아이콘 -->
+    <button id="settingBtn" onclick="togglePdfEdit()" style="background: none; border: none; cursor: pointer;">
       <i id="settingIcon" class="material-icons" style="font-size: 24px; color: #2c3e50;">settings</i>
     </button>
-  </div>
-
-  <!-- 제목 (가운데) -->
-  <div style="width: 100%; text-align: center; margin-top: -10px;">
-    <h2 style="margin: 0 0 10px 0;">비상연락망</h2>
   </div>
 
   <!-- 파일 선택/저장 버튼 (처음엔 숨김) -->
