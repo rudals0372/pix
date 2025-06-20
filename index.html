@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -240,41 +241,34 @@
     <div id="full-screen-text"></div>
   </div>
 </div>
-<!-- 위치센서 화면 -->
-<div id="device-11-content" class="full-screen-info" style="display: none; flex-direction: column; align-items: center;">
-  <!-- 🔙 뒤로가기 버튼 (살려둠) -->
+<!-- 비상연락망 화면 -->
+<div id="device-11-content" class="full-screen-info" style="display: none; flex-direction: column; align-items: center; position: relative;">
+  <!-- 🔙 뒤로가기 버튼 -->
   <button class="close-btn" onclick="goBackToDeviceSelection()">
     <i class="material-icons">arrow_back</i>
   </button>
 
-  <!-- ⚙️ 설정 아이콘 -->
+  <!-- ⚙️ 설정 아이콘 (오른쪽 위) -->
   <div style="position: absolute; top: 10px; right: 10px;">
-    <button class="close-btn" onclick="togglePDFSettings()">
-      <i class="material-icons">settings</i>
+    <button onclick="togglePDFSettings()" style="background: none; border: none; cursor: pointer;">
+      <i class="material-icons" style="font-size: 24px;">settings</i>
     </button>
   </div>
 
-  <!-- 📛 제목 -->
+  <!-- 제목 -->
   <div style="width: 100%; text-align: center; margin-top: 10px;">
     <h2 style="margin: 10px 0;">비상연락망</h2>
   </div>
 
-  <!-- 파일선택 + 저장: 설정 클릭 시만 보임 -->
-  <div id="pdfSettings" style="display: none; width: 100%; display: flex; justify-content: flex-end; padding: 0 20px; gap: 10px; margin-bottom: 10px;">
+  <!-- 숨겨지는 설정 영역 -->
+  <div id="pdfSettings" style="width: 100%; display: none; justify-content: flex-end; padding: 0 20px; box-sizing: border-box; margin-bottom: 10px; gap: 10px;">
     <input type="file" id="pdfInput" accept="application/pdf">
     <button onclick="savePDF()">저장</button>
   </div>
 
-  <!-- 📄 PDF 미리보기 클릭 시 새 탭으로 열림 -->
-  <div id="pdfViewer" style="
-    width: 100%;
-    flex: 1;
-    padding: 0 4px;
-    box-sizing: border-box;
-    overflow: hidden;
-    cursor: pointer;" 
-    onclick="openSavedPDF()">
-    <iframe id="pdfFrame" width="100%" height="100%" style="border: 1px solid #ccc;"></iframe>
+  <!-- PDF 미리보기 영역 -->
+  <div id="pdfViewer" style="width: 100%; flex: 1; padding: 0 4px; box-sizing: border-box; overflow: hidden;">
+    <iframe id="pdfFrame" width="100%" height="100%" style="border: 1px solid #ccc;" onclick="openSavedPDF()"></iframe>
   </div>
 </div>
 <!-- 자재현황 화면 -->
