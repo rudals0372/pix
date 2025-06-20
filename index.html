@@ -268,9 +268,10 @@
 </div>
 <!-- 자재현황 화면 -->
 <div id="device-12-content" class="full-screen-info" style="display: none; flex-direction: column; padding: 20px; box-sizing: border-box;">
-  <button class="close-btn" onclick="goBackToDeviceSelection()">
-    <i class="material-icons">arrow_back</i>
-  </button>
+<!-- 기존 버튼 코드 이 부분만 수정 -->
+<button class="close-btn" onclick="goBackInMaterialFlow()">
+  <i class="material-icons">arrow_back</i>
+</button>
 
   <!-- 팀 목록 화면 -->
   <div id="team-list" style="width: 100%;">
@@ -280,14 +281,14 @@
 
   <!-- 창고 목록 화면 -->
   <div id="warehouse-list" style="width: 100%; display: none;">
-    <button onclick="backToTeamList()" style="margin-bottom: 10px;">팀 목록으로 돌아가기</button>
+
     <h2>창고 선택</h2>
     <div class="container" id="warehouse-cards"></div>
   </div>
 
   <!-- 자재 리스트 화면 -->
   <div id="material-list" style="width: 100%; display: none; flex-direction: column;">
-    <button onclick="backToWarehouseList()" style="margin-bottom: 10px;">창고 목록으로 돌아가기</button>
+
     <h2 id="material-list-title">자재 현황</h2>
     <div id="material-items" style="flex-grow: 1; overflow-y: auto;"></div>
     <button onclick="saveMaterialData()" style="margin-top: 10px; padding: 10px; font-size: 16px; background-color: #4a90e2; color: white; border: none; border-radius: 6px; cursor: pointer;">저장</button>
@@ -652,6 +653,25 @@ function selectDevice(number) {
     document.getElementById('material-list').style.display = 'none';
   } else {
     alert(`${number}번 장비는 아직 연결되지 않았습니다.`);
+    document.getElementById('device-selection').style.display = 'block';
+  }
+}
+  // 통합 뒤로가기 버튼 함수
+function goBackInMaterialFlow() {
+  const teamList = document.getElementById('team-list');
+  const warehouseList = document.getElementById('warehouse-list');
+  const materialList = document.getElementById('material-list');
+
+  if (materialList.style.display === 'flex') {
+    materialList.style.display = 'none';
+    warehouseList.style.display = 'block';
+    currentWarehouse = null;
+  } else if (warehouseList.style.display === 'block') {
+    warehouseList.style.display = 'none';
+    teamList.style.display = 'block';
+    currentTeam = null;
+  } else {
+    document.getElementById('device-12-content').style.display = 'none';
     document.getElementById('device-selection').style.display = 'block';
   }
 }
