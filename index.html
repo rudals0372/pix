@@ -242,32 +242,40 @@
 </div>
 <!-- 위치센서 화면 -->
 <div id="device-11-content" class="full-screen-info" style="display: none; flex-direction: column; align-items: center;">
-  <!-- 뒤로가기 버튼 -->
+  <!-- 🔙 뒤로가기 버튼 (살려둠) -->
   <button class="close-btn" onclick="goBackToDeviceSelection()">
     <i class="material-icons">arrow_back</i>
   </button>
 
-  <!-- 제목: 위쪽 가운데 단독 줄 -->
+  <!-- ⚙️ 설정 아이콘 -->
+  <div style="position: absolute; top: 10px; right: 10px;">
+    <button class="close-btn" onclick="togglePDFSettings()">
+      <i class="material-icons">settings</i>
+    </button>
+  </div>
+
+  <!-- 📛 제목 -->
   <div style="width: 100%; text-align: center; margin-top: 10px;">
     <h2 style="margin: 10px 0;">비상연락망</h2>
   </div>
 
-  <!-- 파일 선택 & 저장 버튼: 위쪽 오른쪽 정렬 -->
-  <div style="width: 100%; display: flex; justify-content: flex-end; padding: 0 20px; box-sizing: border-box; margin-bottom: 10px; gap: 10px;">
+  <!-- 파일선택 + 저장: 설정 클릭 시만 보임 -->
+  <div id="pdfSettings" style="display: none; width: 100%; display: flex; justify-content: flex-end; padding: 0 20px; gap: 10px; margin-bottom: 10px;">
     <input type="file" id="pdfInput" accept="application/pdf">
-    <button onclick="openSavedPDF()" style="margin-right: 8px;">열기</button>
     <button onclick="savePDF()">저장</button>
   </div>
 
-<!-- PDF 미리보기 -->
-<div id="pdfViewer" style="
-  width: 100%;
-  flex: 1;
-  padding: 0 4px;
-  box-sizing: border-box;
-  overflow: hidden;">
-  <iframe id="pdfFrame" width="100%" height="100%" style="border: 1px solid #ccc;"></iframe>
-</div>
+  <!-- 📄 PDF 미리보기 클릭 시 새 탭으로 열림 -->
+  <div id="pdfViewer" style="
+    width: 100%;
+    flex: 1;
+    padding: 0 4px;
+    box-sizing: border-box;
+    overflow: hidden;
+    cursor: pointer;" 
+    onclick="openSavedPDF()">
+    <iframe id="pdfFrame" width="100%" height="100%" style="border: 1px solid #ccc;"></iframe>
+  </div>
 </div>
 <!-- 자재현황 화면 -->
 <div id="device-12-content" class="full-screen-info" style="display: none; flex-direction: column; padding: 20px; box-sizing: border-box;">
@@ -478,7 +486,10 @@
     if (savedPDF) {
       pdfFrame.src = savedPDF;
     }
-
+function togglePDFSettings() {
+  const settings = document.getElementById('pdfSettings');
+  settings.style.display = settings.style.display === 'none' ? 'flex' : 'none';
+}
     // 로그인 상태 확인
     const isLoggedIn = sessionStorage.getItem('isLoggedIn');
     if (isLoggedIn === 'true') {
