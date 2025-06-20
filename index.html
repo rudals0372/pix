@@ -776,17 +776,13 @@ function confirmAddMaterial() {
     return;
   }
 
-  // 여기서 확인창 추가
-  if (!confirm(`자재 "${name}"을(를) 수량 ${qty}개로 추가할까요?`)) {
-    return; // 취소하면 함수 종료
-  }
-
-  // 추가
+  // 추가 (저장 X)
   materials.push({ item: name, quantity: qty });
-  
+
+  // 화면만 업데이트
   renderMaterialList();
 
-  // 입력폼 숨기기
+  // 입력창 닫기
   document.getElementById('addMaterialForm').style.display = 'none';
 }
 </script>
