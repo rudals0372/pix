@@ -261,20 +261,20 @@
     </div>
   </div>
 
- <!-- PDF 미리보기 -->
+<!-- PDF 미리보기 -->
 <div id="pdfViewer" style="
   width: 100%;
   flex: 1;
   padding: 0 4px;
   box-sizing: border-box;
-  position: relative;  /* iframe 위에 클릭레이어 덮기 위해 필요 */
+  position: relative;
   overflow: hidden;">
   
   <!-- 실제 PDF를 보여주는 iframe -->
   <iframe id="pdfFrame" width="100%" height="100%" style="border: 1px solid #ccc;"></iframe>
   
-  <!-- 투명 클릭 레이어 -->
-  <div onclick="openSavedPDF()" style="
+  <!-- 투명 클릭 감지 레이어 -->
+  <div id="pdfClickOverlay" style="
     position: absolute;
     top: 0; left: 0;
     width: 100%; height: 100%;
@@ -499,6 +499,23 @@ document.getElementById('pdfSettingIcon').addEventListener('click', () => {
       pdfFrame.src = savedPDF;
     }
 
+    const overlay = document.getElementById('pdfClickOverlay');
+let mouseDownX = 0, mouseDownY = 0;
+
+overlay.addEventListener('mousedown', (e) => {
+  mouseDownX = e.clientX;
+  mouseDownY = e.clientY;
+});
+
+overlay.addEventListener('mouseup', (e) => {
+  const deltaX = Math.abs(e.clientX - mouseDownX);
+  const deltaY = Math.abs(e.clientY - mouseDownY);
+  
+  // 드래그가 아닌 경우만 새 탭 열기
+  if (deltaX < 5 && deltaY < 5) {
+    openSavedPDF(); // 이건 네가 기존에 만든 함수
+  }
+});
     // 로그인 상태 확인
     const isLoggedIn = sessionStorage.getItem('isLoggedIn');
     if (isLoggedIn === 'true') {
