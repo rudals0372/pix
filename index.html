@@ -751,7 +751,6 @@ function cancelAddMaterial() {
   document.getElementById('addMaterialForm').style.display = 'none';
 }
 
-// 자재 추가 확인
 function confirmAddMaterial() {
   const nameInput = document.getElementById('newMaterialName');
   const qtyInput = document.getElementById('newMaterialQty');
@@ -769,12 +768,17 @@ function confirmAddMaterial() {
     return;
   }
 
-  // 중복 체크 (같은 이름 있으면 추가 안함)
+  // 중복 체크
   const materials = materialData[currentTeam][currentWarehouse];
   if (materials.find(m => m.item === name)) {
     alert('이미 같은 이름의 자재가 있습니다.');
     nameInput.focus();
     return;
+  }
+
+  // 여기서 확인창 추가
+  if (!confirm(`자재 "${name}"을(를) 수량 ${qty}개로 추가할까요?`)) {
+    return; // 취소하면 함수 종료
   }
 
   // 추가
