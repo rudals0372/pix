@@ -609,41 +609,6 @@ function selectWarehouse(warehouse) {
   renderMaterialList();
 }
 
-// 자재 리스트 렌더링
-function renderMaterialList() {
-  const container = document.getElementById('material-items');
-  container.innerHTML = '';
-
-  const materials = materialData[currentTeam][currentWarehouse] || [];
-  document.getElementById('material-list-title').textContent = `${currentTeam.toUpperCase()} - ${currentWarehouse} 자재 현황`;
-
-  materials.forEach(({ item, quantity }) => {
-    const row = document.createElement('div');
-    row.style.display = 'flex';
-    row.style.justifyContent = 'space-between';
-    row.style.alignItems = 'center';
-    row.style.marginBottom = '8px';
-
-    const label = document.createElement('span');
-    label.textContent = item;
-    label.style.fontWeight = '600';
-    label.style.textAlign = 'left';
-    label.style.flex = '1'; // 공간을 넓게 차지해서 왼쪽 정렬 효과가 확실해짐
-
-    const input = document.createElement('input');
-    input.type = 'number';
-    input.min = '0';
-    input.value = quantity;
-    input.setAttribute('data-item', item);
-    input.style.width = '60px';
-    input.style.padding = '4px';
-
-    row.appendChild(label);
-    row.appendChild(input);
-    container.appendChild(row);
-  });
-}
-
 // 뒤로가기: 창고 목록 -> 팀 목록
 function backToTeamList() {
   document.getElementById('warehouse-list').style.display = 'none';
@@ -718,7 +683,8 @@ function renderMaterialList() {
     label.textContent = item;
     label.style.fontWeight = '600';
     label.style.flex = '1'; // 이름 영역 고정
-    
+    label.style.textAlign = 'left';
+
     const input = document.createElement('input');
     input.type = 'number';
     input.min = '0';
