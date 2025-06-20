@@ -261,16 +261,26 @@
     </div>
   </div>
 
-  <!-- PDF 미리보기 -->
-  <div id="pdfViewer" onclick="openSavedPDF()" style="
-    width: 100%;
-    flex: 1;
-    padding: 0 4px;
-    box-sizing: border-box;
-    overflow: hidden;
-    cursor: pointer;">
-    <iframe id="pdfFrame" width="100%" height="100%" style="border: 1px solid #ccc; "></iframe>
-  </div>
+ <!-- PDF 미리보기 -->
+<div id="pdfViewer" style="
+  width: 100%;
+  flex: 1;
+  padding: 0 4px;
+  box-sizing: border-box;
+  position: relative;  /* iframe 위에 클릭레이어 덮기 위해 필요 */
+  overflow: hidden;">
+  
+  <!-- 실제 PDF를 보여주는 iframe -->
+  <iframe id="pdfFrame" width="100%" height="100%" style="border: 1px solid #ccc;"></iframe>
+  
+  <!-- 투명 클릭 레이어 -->
+  <div onclick="openSavedPDF()" style="
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    cursor: pointer;
+    z-index: 10;"></div>
+</div>
 </div>
 <!-- 자재현황 화면 -->
 <div id="device-12-content" class="full-screen-info" style="display: none; flex-direction: column; padding: 20px; box-sizing: border-box;">
