@@ -246,21 +246,21 @@
 <div id="device-11-content" class="full-screen-info" style="display: none; flex-direction: column; align-items: center;">
 
   <!-- 상단 바 -->
-  <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 10px 20px; box-sizing: border-box;">
-    
-    <!-- 뒤로가기 버튼 -->
-    <button class="close-btn" onclick="goBackToDeviceSelection()" style="margin: 0;">
-      <i class="material-icons">arrow_back</i>
-    </button>
-       <!-- 설정 아이콘 -->
-   <button id="settingBtn" onclick="togglePdfEdit()" style="background: none; border: none; cursor: pointer;">
-    <i class="material-icons" id="settingIcon" style="font-size: 24px; color: #2c3e50;">settings</i>
-  </button>
-  </div>
-    <!-- 제목 -->
-    <h2>비상연락망</h2>
+  <div style="position: relative; width: 100%; padding: 10px 20px; box-sizing: border-box;">
 
- 
+    <!-- 뒤로가기 버튼: 왼쪽 정렬 -->
+    <button class="close-btn" onclick="goBackToDeviceSelection()" style="position: absolute; left: 20px; top: 10px; background: none; border: none;">
+      <i class="material-icons" style="font-size: 24px;">arrow_back</i>
+    </button>
+
+    <!-- 설정 아이콘: 오른쪽 정렬 -->
+    <button id="settingBtn" onclick="togglePdfEdit()" style="position: absolute; right: 20px; top: 10px; background: none; border: none; cursor: pointer;">
+      <i class="material-icons" id="settingIcon" style="font-size: 24px; color: #2c3e50;">settings</i>
+    </button>
+  </div>
+
+  <!-- 제목: 아래쪽에 정중앙 -->
+  <h2 style="margin-top: 0; margin-bottom: 10px; text-align: center;">비상연락망</h2>
 
   <!-- 파일 선택 & 저장 버튼 영역 (초기에 숨김) -->
   <div id="pdf-edit-controls" style="width: 100%; display: none; justify-content: flex-end; padding: 0 20px; box-sizing: border-box; margin-bottom: 10px; gap: 10px;">
