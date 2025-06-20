@@ -279,7 +279,6 @@
     const pw = document.getElementById('password').value;
 
     if (id === 'sign' && pw === '7788') {
-      sessionStorage.setItem('isLoggedIn', 'true'); // 로그인 상태 저장
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('device-selection').style.display = 'block';
     } else {
@@ -374,6 +373,7 @@
     document.getElementById('device-selection').style.display = 'block';
   }
 
+  // base64 저장용 PDF 처리
   const pdfInput = document.getElementById('pdfInput');
   const pdfFrame = document.getElementById('pdfFrame');
 
@@ -384,9 +384,9 @@
       reader.onload = function (e) {
         const base64PDF = e.target.result;
         pdfFrame.src = base64PDF;
-        sessionStorage.setItem('tempPDF', base64PDF);
+        sessionStorage.setItem('tempPDF', base64PDF); // 임시 저장
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(file); // base64로 읽기
     }
   });
 
@@ -398,9 +398,7 @@
     } else {
       alert('저장할 PDF가 없습니다.');
     }
-  }
-
-    function openSavedPDF() {
+  }function openSavedPDF() {
   const base64Data = localStorage.getItem('savedPDF');
 
   if (!base64Data || !base64Data.startsWith('data:application/pdf;base64,')) {
@@ -408,31 +406,31 @@
     return;
   }
 
+  // base64 부분만 추출
   const base64 = base64Data.split(',')[1];
+
+  // base64 → 바이너리 변환
   const binary = atob(base64);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) {
     bytes[i] = binary.charCodeAt(i);
   }
 
+  // Blob 생성
   const blob = new Blob([bytes], { type: 'application/pdf' });
+
+  // Blob URL 생성
   const blobUrl = URL.createObjectURL(blob);
 
-  // 브라우저 새 탭에서 열기
-  window.open(blobUrl, '_blank');
+  // Mozilla PDF.js Viewer로 열기
+  const viewerUrl = `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(blobUrl)}`;
+  window.open(viewerUrl, '_blank');
 }
+
   window.addEventListener('load', function () {
-    // PDF 미리보기
     const savedPDF = localStorage.getItem('savedPDF');
     if (savedPDF) {
       pdfFrame.src = savedPDF;
-    }
-
-    // 로그인 상태 확인
-    const isLoggedIn = sessionStorage.getItem('isLoggedIn');
-    if (isLoggedIn === 'true') {
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('device-selection').style.display = 'block';
     }
   });
 </script>
