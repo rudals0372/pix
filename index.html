@@ -165,9 +165,7 @@
       padding: 0 10px;
       box-sizing: border-box;
     }
-#device-11-content {
-  flex-direction: column;
-}
+
     @media (max-width: 480px) {
       .card p {
         font-size: 16px;
@@ -238,34 +236,18 @@
   </div>
 </div>
 <!-- 위치센서 화면 -->
-<div id="device-11-content" class="full-screen-info" style="display: none; flex-direction: column; align-items: center;">
-  <!-- 뒤로가기 버튼 -->
+<div id="device-11-content" class="full-screen-info">
   <button class="close-btn" onclick="goBackToDeviceSelection()">
     <i class="material-icons">arrow_back</i>
   </button>
-
-  <!-- 제목: 위쪽 가운데 단독 줄 -->
-  <div style="width: 100%; text-align: center; margin-top: 10px;">
-    <h2 style="margin: 10px 0;">비상연락망</h2>
-  </div>
-
-  <!-- 파일 선택 & 저장 버튼: 위쪽 오른쪽 정렬 -->
-  <div style="width: 100%; display: flex; justify-content: flex-end; padding: 0 20px; box-sizing: border-box; margin-bottom: 10px; gap: 10px;">
+  <h2>비상연락망</h2>
     <input type="file" id="pdfInput" accept="application/pdf">
-    <button onclick="openSavedPDF()" style="margin-right: 8px;">열기</button>
-    <button onclick="savePDF()">저장</button>
+  <button onclick="savePDF()">저장</button>
+  <div id="pdfViewer" style="margin-top: 20px;">
+    <iframe id="pdfFrame" width="100%" height="600px" style="border: 1px solid #ccc;"></iframe>
   </div>
+</div>
 
-<!-- PDF 미리보기 -->
-<div id="pdfViewer" style="
-  width: 100%;
-  flex: 1;
-  padding: 0 4px;
-  box-sizing: border-box;
-  overflow: hidden;">
-  <iframe id="pdfFrame" width="100%" height="100%" style="border: 1px solid #ccc;"></iframe>
-</div>
-</div>
 <!-- 보안장치 화면 -->
 <div id="device-12-content" class="full-screen-info">
   <button class="close-btn" onclick="goBackToDeviceSelection()">
@@ -398,34 +380,7 @@
     } else {
       alert('저장할 PDF가 없습니다.');
     }
-  }function openSavedPDF() {
-  const base64Data = localStorage.getItem('savedPDF');
-
-  if (!base64Data || !base64Data.startsWith('data:application/pdf;base64,')) {
-    alert('저장된 PDF가 없습니다.');
-    return;
   }
-
-  // base64 부분만 추출
-  const base64 = base64Data.split(',')[1];
-
-  // base64 → 바이너리 변환
-  const binary = atob(base64);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-
-  // Blob 생성
-  const blob = new Blob([bytes], { type: 'application/pdf' });
-
-  // Blob URL 생성
-  const blobUrl = URL.createObjectURL(blob);
-
-  // Mozilla PDF.js Viewer로 열기
-  const viewerUrl = `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(blobUrl)}`;
-  window.open(viewerUrl, '_blank');
-}
 
   window.addEventListener('load', function () {
     const savedPDF = localStorage.getItem('savedPDF');
