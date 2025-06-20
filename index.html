@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <style>
     body {
       font-family: 'Pretendard', sans-serif;
@@ -274,11 +275,15 @@
   <h1>자재현황</h1>
 </div>
 <script>
+  const VALID_ID = 'sign';
+  const VALID_PW_HASH = 'e1b5d8db3a8cf26fd0615bc51a52ae4db346f10ffeb4f3b338f57ce5e8c1aa3c'; // SHA-256("7788")
+
   function login() {
     const id = document.getElementById('username').value;
     const pw = document.getElementById('password').value;
+    const hashed = CryptoJS.SHA256(pw).toString();
 
-    if (id === 'sign' && pw === '7788') {
+    if (id === VALID_ID && hashed === VALID_PW_HASH) {
       sessionStorage.setItem('isLoggedIn', 'true'); // 로그인 상태 저장
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('device-selection').style.display = 'block';
@@ -400,39 +405,19 @@
     }
   }
 
-    function openSavedPDF() {
-  const base64Data = localStorage.getItem('savedPDF');
+  function openSavedPDF() {
+    const base64Data = localStorage.getItem('savedPDF');
 
-  if (!base64Data || !base64Data.startsWith('data:application/pdf;base64,')) {
-    alert('저장된 PDF가 없습니다.');
-    return;
-  }
-
-  const base64 = base64Data.split(',')[1];
-  const binary = atob(base64);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-
-  const blob = new Blob([bytes], { type: 'application/pdf' });
-  const blobUrl = URL.createObjectURL(blob);
-
-  // 브라우저 새 탭에서 열기
-  window.open(blobUrl, '_blank');
-}
-  window.addEventListener('load', function () {
-    // PDF 미리보기
-    const savedPDF = localStorage.getItem('savedPDF');
-    if (savedPDF) {
-      pdfFrame.src = savedPDF;
+    if (!base64Data || !base64Data.startsWith('data:application/pdf;base64,')) {
+      alert('저장된 PDF가 없습니다.');
+      return;
     }
 
-    // 로그인 상태 확인
-    const isLoggedIn = sessionStorage.getItem('isLoggedIn');
-    if (isLoggedIn === 'true') {
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('device-selection').style.display = 'block';
+    const base64 = base64Data.split(',')[1];
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
     }
-  });
-</script>
+
+    const blob = new Blob([bytes], { type: 'application
