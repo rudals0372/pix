@@ -627,6 +627,8 @@ function renderMaterialList() {
     const label = document.createElement('span');
     label.textContent = item;
     label.style.fontWeight = '600';
+    label.style.textAlign = 'left';
+    label.style.flex = '1'; // 공간을 넓게 차지해서 왼쪽 정렬 효과가 확실해짐
 
     const input = document.createElement('input');
     input.type = 'number';
