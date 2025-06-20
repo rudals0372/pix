@@ -244,25 +244,25 @@
 </div>
 <!-- 비상연락망 화면 -->
 <div id="device-11-content" class="full-screen-info" style="display: none; flex-direction: column; align-items: center;">
-  <!-- 상단 바: 뒤로가기와 설정 버튼 -->
+
+  <!-- 상단 바: 뒤로가기 & 설정 아이콘 -->
   <div style="position: relative; width: 100%; height: 48px;">
-    <!-- 뒤로가기 버튼 -->
+
+    <!-- 뒤로가기 버튼 (왼쪽 상단 구석) -->
     <button class="close-btn" onclick="goBackToDeviceSelection()" 
-            style="position: absolute; top: 8px; left: 8px; background: none; border: none; cursor: pointer;">
+            style="position: absolute; top: 0px; left: 0px; padding: 12px; background: none; border: none; cursor: pointer;">
       <i class="material-icons">arrow_back</i>
     </button>
 
-    <!-- 설정 아이콘 -->
+    <!-- 설정 아이콘 (오른쪽 상단 구석) -->
     <button id="settingBtn" onclick="togglePdfEdit()" 
-            style="position: absolute; top: 8px; right: 8px; background: none; border: none; cursor: pointer;">
+            style="position: absolute; top: 0px; right: 0px; padding: 12px; background: none; border: none; cursor: pointer;">
       <i class="material-icons" id="settingIcon" style="font-size: 24px; color: #2c3e50;">settings</i>
     </button>
   </div>
 
   <!-- 제목 -->
-  <div style="width: 100%; text-align: center; margin: 4px 0 10px;">
-    <h2 style="margin: 0;">비상연락망</h2>
-  </div>
+  <h2 style="margin: 10px 0 10px 0; text-align: center;">비상연락망</h2>
 
   <!-- 파일 선택 & 저장 버튼 영역 (초기 숨김) -->
   <div id="pdf-edit-controls" style="width: 100%; display: none; justify-content: flex-end; padding: 0 20px; box-sizing: border-box; margin-bottom: 10px; gap: 10px;">
@@ -274,7 +274,7 @@
   <div id="pdfViewer" style="position: relative; width: 100%; flex: 1; padding: 0 4px; box-sizing: border-box; overflow: hidden;">
     <iframe id="pdfFrame" width="100%" height="100%" style="border: 1px solid #ccc;"></iframe>
 
-    <!-- 전체보기 버튼 -->
+    <!-- 오버레이 버튼: 전체보기 -->
     <button onclick="openSavedPDF()" style="position: absolute; bottom: 10px; right: 10px; background-color: rgba(74, 144, 226, 0.9); color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 14px; cursor: pointer;">
       🔍 전체보기
     </button>
