@@ -6,8 +6,13 @@
   <title>MJ81</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <!-- PDF.js 라이브러리 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+
+  <!-- CryptoJS 라이브러리: 반드시 PDF.js 다음, head 내에 있어야 함 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
   <style>
     body {
       font-family: 'Pretendard', sans-serif;
@@ -275,15 +280,12 @@
   <h1>자재현황</h1>
 </div>
 <script>
-  const VALID_ID = 'sign';
-  const VALID_PW_HASH = 'e1b5d8db3a8cf26fd0615bc51a52ae4db346f10ffeb4f3b338f57ce5e8c1aa3c';
-
   function login() {
     const id = document.getElementById('username').value;
     const pw = document.getElementById('password').value;
     const hashed = CryptoJS.SHA256(pw).toString();
 
-    if (id === VALID_ID && hashed === VALID_PW_HASH) {
+    if (id === 'sign' && hashed === 'e1b5d8db3a8cf26fd0615bc51a52ae4db346f10ffeb4f3b338f57ce5e8c1aa3c') {
       sessionStorage.setItem('isLoggedIn', 'true'); // 로그인 상태 저장
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('device-selection').style.display = 'block';
@@ -420,4 +422,27 @@
       bytes[i] = binary.charCodeAt(i);
     }
 
-    const blob = new Blob([bytes], { type: 'application
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    const blobUrl = URL.createObjectURL(blob);
+
+    // 브라우저 새 탭에서 열기
+    window.open(blobUrl, '_blank');
+  }
+
+  window.addEventListener('load', function () {
+    // PDF 미리보기
+    const savedPDF = localStorage.getItem('savedPDF');
+    if (savedPDF) {
+      pdfFrame.src = savedPDF;
+    }
+
+    // 로그인 상태 확인
+    const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+    if (isLoggedIn === 'true') {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('device-selection').style.display = 'block';
+    }
+  });
+</script>
+</body>
+</html>
