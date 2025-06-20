@@ -437,10 +437,10 @@
   }
 
     // 설정 영역 토글
-  function togglePDFSetting() {
-    const area = document.getElementById('pdfSettingArea');
-    area.style.display = (area.style.display === 'flex') ? 'none' : 'flex';
-  }
+  function togglePdfEdit() {
+  const controls = document.getElementById('pdf-edit-controls');
+  controls.style.display = (controls.style.display === 'none') ? 'flex' : 'none';
+}
 
   // 파일 입력 이벤트
   const pdfInput = document.getElementById('pdfInput');
