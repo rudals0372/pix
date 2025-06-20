@@ -787,7 +787,8 @@ function confirmAddMaterial() {
     nameInput.focus();
     return;
   }
-
+document.getElementById('newMaterialName').value = '';
+document.getElementById('newMaterialQty').value = '';
   // 추가 (저장 X)
   materials.push({ item: name, quantity: qty });
 
