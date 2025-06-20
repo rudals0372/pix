@@ -289,21 +289,24 @@
   <!-- 자재 리스트 화면 -->
   <div id="material-list" style="width: 100%; display: none; flex-direction: column;">
 <!-- 자재 리스트 화면 내부, #material-list 안에 아래 버튼 추가 -->
-<button id="addMaterialBtn" style="margin: 10px 0; padding: 10px; font-size: 16px; background-color: #27ae60; color: white; border: none; border-radius: 6px; cursor: pointer;">
-  자재 추가
-</button>
-
-<!-- 자재 추가 입력폼 (초기엔 숨김) -->
-<div id="addMaterialForm" style="display:none; margin-bottom: 10px;">
-  <input type="text" id="newMaterialName" placeholder="자재 이름" style="padding: 6px; font-size: 14px; width: 150px; margin-right: 8px;">
-  <input type="number" id="newMaterialQty" placeholder="수량" min="0" style="padding: 6px; font-size: 14px; width: 80px; margin-right: 8px;">
-  <button onclick="confirmAddMaterial()" style="padding: 6px 12px; background-color: #2980b9; color: white; border: none; border-radius: 4px; cursor: pointer;">확인</button>
-  <button onclick="cancelAddMaterial()" style="padding: 6px 12px; background-color: #aaa; color: white; border: none; border-radius: 4px; cursor: pointer;">취소</button>
+<!-- 자재 리스트 아래쪽 버튼 2개 (한 줄 배치) -->
+<div style="display: flex; justify-content: space-between; width: 100%; margin-top: 10px;">
+  <button id="toggleAddMaterialBtn" onclick="toggleAddMaterial()" style="padding: 10px; font-size: 16px; background-color: #fff; color: #4a90e2; border: 2px solid #4a90e2; border-radius: 6px; cursor: pointer;">
+    자재추가
+  </button>
+  <button onclick="saveMaterialData()" style="padding: 10px; font-size: 16px; background-color: #4a90e2; color: white; border: none; border-radius: 6px; cursor: pointer;">
+    저장
+  </button>
 </div>
-    <h2 id="material-list-title">자재 현황</h2>
-    <div id="material-items" style="flex-grow: 1; overflow-y: auto;"></div>
-    <button onclick="saveMaterialData()" style="margin-top: 10px; padding: 10px; font-size: 16px; background-color: #4a90e2; color: white; border: none; border-radius: 6px; cursor: pointer;">저장</button>
+
+<!-- 자재 추가 입력 폼 (초기 숨김) -->
+<div id="addMaterialForm" style="display: none; margin-top: 10px; width: 100%;">
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <input id="newMaterialName" placeholder="자재 이름" style="flex: 1; padding: 6px; margin-right: 10px;" />
+    <input id="newMaterialQty" type="number" placeholder="수량" min="0" style="width: 60px; padding: 6px;" />
+    <button onclick="confirmAddMaterial()" style="margin-left: 10px; padding: 6px 10px;">확인</button>
   </div>
+</div>
 </div>
 <script>
   function login() {
