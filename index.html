@@ -289,21 +289,21 @@
     <div class="container" id="warehouse-cards"></div>
   </div>
 
-<!-- 자재 리스트 제목 + 설정 버튼 -->
-<div style="width: 100%; position: relative;">
-  <h2 id="material-list-title" style="margin-right: 40px;">자재 현황</h2>
-  <!-- 설정 아이콘 (오른쪽 위) -->
-  <div style="position: absolute; top: 0; right: 0;">
-    <button onclick="toggleEditMode()" style="border: none; background: none; font-size: 24px; cursor: pointer;">
-      <i id="settings-icon" class="material-icons">settings</i>
-    </button>
-  </div>
+  <!-- 자재 리스트 화면 -->
+  <div id="material-list" style="width: 100%; display: none; flex-direction: column;">
+<!-- 자재 리스트 화면 내부, #material-list 안에 아래 버튼 추가 -->
+<!-- 자재 리스트 아래쪽 버튼 2개 (한 줄 배치) -->
+<div style="display: flex; justify-content: space-between; width: 100%; margin-top: 10px;">
+  <button id="toggleAddMaterialBtn" onclick="toggleAddMaterial()" style="padding: 10px; font-size: 16px; background-color: #fff; color: #4a90e2; border: 2px solid #4a90e2; border-radius: 6px; box-shadow: none;
+outline: none; ">
+    자재추가
+  </button>
+    <button onclick="saveMaterialData()" style="padding: 10px; font-size: 16px; background-color: #4a90e2; color: white; border: none; border-radius: 6px; cursor: pointer;">
+    저장
+  </button>
 </div>
 
-<!-- 자재 리스트 -->
-<div id="material-items" style="flex-grow: 1; overflow-y: auto;"></div>
-
-<!-- 자재 추가 입력 폼 -->
+<!-- 자재 추가 입력 폼 (초기 숨김) -->
 <div id="addMaterialForm" style="display: none; margin-top: 10px; width: 100%;">
   <div style="display: flex; justify-content: space-between; align-items: center;">
     <input id="newMaterialName" placeholder="자재 이름" style="flex: 1; padding: 6px; margin-right: 10px;" />
@@ -311,15 +311,10 @@
     <button onclick="confirmAddMaterial()" style="margin-left: 10px; padding: 6px 10px;">확인</button>
   </div>
 </div>
+       <h2 id="material-list-title">자재 현황</h2>
+    <div id="material-items" style="flex-grow: 1; overflow-y: auto;"></div>
 
-<!-- 자재추가/저장 버튼 영역 -->
-<div id="material-controls" style="display: none; justify-content: space-between; width: 100%; margin-top: 10px;">
-  <button id="toggleAddMaterialBtn" onclick="toggleAddMaterial()" style="padding: 10px; font-size: 16px; background-color: #fff; color: #4a90e2; border: 2px solid #4a90e2; border-radius: 6px;">
-    자재추가
-  </button>
-  <button onclick="saveMaterialData()" style="padding: 10px; font-size: 16px; background-color: #4a90e2; color: white; border: none; border-radius: 6px;">
-    저장
-  </button>
+  </div>
 </div>
 <script>
   function login() {
@@ -669,14 +664,15 @@ function goBackInMaterialFlow() {
     document.getElementById('device-selection').style.display = 'block';
   }
 }
- function renderMaterialList() {
+  // renderMaterialList() 함수 수정 — 자재 항목마다 삭제 버튼 추가
+function renderMaterialList() {
   const container = document.getElementById('material-items');
   container.innerHTML = '';
 
   const materials = materialData[currentTeam][currentWarehouse] || [];
   document.getElementById('material-list-title').textContent = `${currentTeam.toUpperCase()} - ${currentWarehouse} 자재 현황`;
 
-  materials.forEach(({ item, quantity }) => {
+  materials.forEach(({ item, quantity }, index) => {
     const row = document.createElement('div');
     row.style.display = 'flex';
     row.style.justifyContent = 'space-between';
@@ -686,28 +682,38 @@ function goBackInMaterialFlow() {
     const label = document.createElement('span');
     label.textContent = item;
     label.style.fontWeight = '600';
-    label.style.flex = '1';
+    label.style.flex = '1'; // 이름 영역 고정
     label.style.textAlign = 'left';
 
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.min = '0';
+    input.value = quantity;
+    input.setAttribute('data-item', item);
+    input.style.width = '60px';
+    input.style.padding = '4px';
+
+    const delBtn = document.createElement('button');
+    delBtn.textContent = '삭제';
+    delBtn.style.marginLeft = '10px';
+    delBtn.style.padding = '4px 8px';
+    delBtn.style.backgroundColor = '#e74c3c';
+    delBtn.style.color = 'white';
+    delBtn.style.border = 'none';
+    delBtn.style.borderRadius = '4px';
+    delBtn.style.cursor = 'pointer';
+    delBtn.onclick = () => {
+      if (confirm(`'${item}' 자재를 삭제할까요?`)) {
+        // materialData에서 삭제
+        materialData[currentTeam][currentWarehouse].splice(index, 1);
+        
+        renderMaterialList();
+      }
+    };
+
     row.appendChild(label);
-
-    if (isEditMode) {
-      const input = document.createElement('input');
-      input.type = 'number';
-      input.min = '0';
-      input.value = quantity;
-      input.setAttribute('data-item', item);
-      input.style.width = '60px';
-      input.style.padding = '4px';
-      row.appendChild(input);
-    } else {
-      const qtySpan = document.createElement('span');
-      qtySpan.textContent = quantity + '개';
-      qtySpan.style.width = '60px';
-      qtySpan.style.textAlign = 'right';
-      row.appendChild(qtySpan);
-    }
-
+    row.appendChild(input);
+    row.appendChild(delBtn);
     container.appendChild(row);
   });
 }
@@ -773,21 +779,5 @@ document.getElementById('newMaterialQty').value = '';
     document.getElementById('newMaterialName').value = '';
     document.getElementById('newMaterialQty').value = '';
   }
-}
-  let isEditMode = false;
-
-// 설정 아이콘 눌렀을 때 편집모드 토글
-function toggleEditMode() {
-  isEditMode = !isEditMode;
-  const icon = document.getElementById('settings-icon');
-  icon.textContent = isEditMode ? 'close' : 'settings';
-  renderMaterialList();
-  toggleMaterialControls(isEditMode);
-}
-
-// 편집모드에서 버튼 영역 보여주기/숨기기
-function toggleMaterialControls(show) {
-  document.getElementById('material-controls').style.display = show ? 'flex' : 'none';
-  document.getElementById('addMaterialForm').style.display = 'none';
 }
 </script>
