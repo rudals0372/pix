@@ -480,7 +480,12 @@ function togglePdfEdit() {
   const pdfFrame = document.getElementById('pdfFrame');
 
  // 비상연락망 PDF 파일 업로드 및 URL 저장
-    function uploadFile(file) {
+   function uploadFile(file) {
+      if (!file) {
+        alert('파일을 선택해주세요!');
+        return;
+      }
+
       // 파일을 Firebase Storage에 업로드
       const storageRef = storage.ref('emergencyContacts/' + file.name); // 경로 설정
       const uploadTask = storageRef.put(file);
@@ -501,7 +506,6 @@ function togglePdfEdit() {
         }
       );
     }
-
     // PDF URL을 Firebase Realtime Database에 저장
     function savePdfUrl(url) {
       const pdfUrlRef = db.ref('emergencyContacts/pdfUrl');
