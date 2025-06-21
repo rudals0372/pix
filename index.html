@@ -521,7 +521,12 @@ function togglePdfEdit() {
         uploadButton.disabled = true;  // 파일이 없으면 업로드 버튼 비활성화
       }
     }
-  
+
+  document.getElementById('uploadButton').addEventListener('click', function() {
+  console.log("업로드 버튼 클릭됨");  // 버튼이 클릭되었는지 확인
+  // 업로드 함수 호출
+  uploadFile(document.getElementById('fileInput').files[0]);
+});
   
     function openSavedPDF() {
   const base64Data = localStorage.getItem('savedPDF');
