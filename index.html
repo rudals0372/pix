@@ -268,11 +268,12 @@
   <!-- 제목 -->
   <h2 style="margin: 10px 0 10px 0; text-align: center;">비상연락망</h2>
   
-<!-- PDF URL 수정 및 저장 버튼 (초기 숨김) -->
+    <!-- 파일 업로드 및 저장 버튼 (초기 숨김) -->
     <div id="pdf-edit-controls" style="width: 100%; display: none; justify-content: flex-end; padding: 0 20px; box-sizing: border-box; margin-top: 10px; gap: 10px;">
-      <input type="text" id="pdfInput" placeholder="새로운 PDF URL" style="flex: 1; padding: 6px;">
-      <button onclick="updatePdfUrl(document.getElementById('pdfInput').value)">저장</button>
+      <input type="file" id="fileInput" accept="application/pdf" style="flex: 1; padding: 6px;">
+      <button onclick="uploadFile(document.getElementById('fileInput').files[0])">파일 업로드</button>
     </div>
+  </div>
 
   <!-- PDF 미리보기 -->
   <div id="pdfViewer" style="position: relative; width: 100%; flex: 1; padding: 0 4px; box-sizing: border-box; overflow: hidden;">
