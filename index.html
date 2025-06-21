@@ -268,11 +268,12 @@
   <!-- 제목 -->
   <h2 style="margin: 10px 0 10px 0; text-align: center;">비상연락망</h2>
   
-    <!-- 파일 업로드 및 저장 버튼 (초기 숨김) -->
+   <!-- 파일 업로드 및 저장 버튼 (초기 숨김) -->
     <div id="pdf-edit-controls" style="width: 100%; display: none; justify-content: flex-end; padding: 0 20px; box-sizing: border-box; margin-top: 10px; gap: 10px;">
-      <input type="file" id="fileInput" accept="application/pdf" style="flex: 1; padding: 6px;">
-      <button onclick="uploadFile(document.getElementById('fileInput').files[0])">파일 업로드</button>
+      <input type="file" id="fileInput" accept="application/pdf" style="flex: 1; padding: 6px;" onchange="handleFileInputChange(event)">
+      <button id="uploadButton" onclick="uploadFile(document.getElementById('fileInput').files[0])" disabled>파일 업로드</button>
     </div>
+
 
 
   <!-- PDF 미리보기 -->
@@ -511,6 +512,16 @@ function togglePdfEdit() {
       const pdfUrlRef = db.ref('emergencyContacts/pdfUrl');
       pdfUrlRef.set(url);  // Firebase Realtime Database에 PDF URL 저장
     }
+  // 파일 입력이 변경될 때 업로드 버튼 활성화
+    function handleFileInputChange(event) {
+      const uploadButton = document.getElementById('uploadButton');
+      if (event.target.files.length > 0) {
+        uploadButton.disabled = false;  // 파일 선택이 되면 업로드 버튼 활성화
+      } else {
+        uploadButton.disabled = true;  // 파일이 없으면 업로드 버튼 비활성화
+      }
+    }
+  
   
     function openSavedPDF() {
   const base64Data = localStorage.getItem('savedPDF');
