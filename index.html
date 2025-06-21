@@ -304,6 +304,8 @@
 <!-- 자재 리스트 화면 -->
 <div id="material-list" style="width: 100%; display: none; flex-direction: column; padding: 20px; box-sizing: border-box;">
 
+ 
+     
   <!-- 자재 리스트 상단 헤더 (제목 + 설정 아이콘) -->
   <div id="material-list-header" style="display: flex; justify-content: center; align-items: center; margin-bottom: 10px;">
     <h2 id="material-list-title" style="margin: 0;">자재 현황</h2>
@@ -311,11 +313,12 @@
     <!-- 설정 아이콘 (오른쪽 상단 구석) -->
     <button id="toggleEditModeBtn" title="설정" 
             onclick="toggleEditMode()"
-            style="font-size: 28px; background: none; border: none; cursor: pointer; color: #666; position: absolute; top: 10px; right: 10px;">
+            style="font-size: 28px; background: none; border: none; cursor: pointer; color: #666; position: absolute; top: 0px; right: 10px;">
       <i class="material-icons" id="settingIcon">settings</i>
     </button>
   </div>
 
+     
   <!-- 자재 리스트 항목들 -->
   <div id="material-items" style="flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; justify-content: flex-start;">
     <!-- 자재 항목들이 여기에 추가됩니다. -->
