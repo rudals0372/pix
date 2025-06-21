@@ -4,6 +4,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
+
   <title>MJ81</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -346,6 +349,22 @@
 </div>
 </div>
 <script>
+  const firebaseConfig = {
+      apiKey: "your-api-key",  // Firebase에서 제공하는 API 키
+      authDomain: "your-auth-domain",  // Firebase 프로젝트의 Auth Domain
+      databaseURL: "https://your-database-name.firebaseio.com",  // Firebase Realtime Database URL
+      projectId: "your-project-id",  // Firebase 프로젝트 ID
+      storageBucket: "your-storage-bucket",  // Firebase 스토리지 버킷
+      messagingSenderId: "your-sender-id",  // 메시징 ID
+      appId: "your-app-id"  // Firebase 앱 ID
+    };
+
+    // Firebase 앱 초기화
+    const app = firebase.initializeApp(firebaseConfig);
+
+    // Firebase Realtime Database 참조
+    const database = firebase.database();
+
   function login() {
     const id = document.getElementById('username').value;
     const pw = document.getElementById('password').value;
