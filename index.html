@@ -266,11 +266,12 @@
   <!-- 제목 -->
   <h2 style="margin: 10px 0 10px 0; text-align: center;">비상연락망</h2>
   
-  <!-- 파일 선택 & 저장 버튼 영역 (초기 숨김) -->
-  <div id="pdf-edit-controls" style="width: 100%; display: none; justify-content: flex-end; padding: 0 20px; box-sizing: border-box; margin-bottom: 10px; gap: 10px;">
+ <!-- PDF 파일 선택 및 저장 버튼 -->
+<div id="pdf-edit-controls" style="width: 100%; display: none; justify-content: flex-end; padding: 0 20px; box-sizing: border-box; margin-bottom: 10px; gap: 10px;">
     <input type="file" id="pdfInput" accept="application/pdf">
-    <button onclick="uploadPDF()">저장</button> <!-- PDF 업로드 및 저장 -->
-  </div>
+    <button onclick="savePDF()">저장</button> <!-- 저장 버튼 -->
+</div>
+
 
   <!-- PDF 미리보기 -->
   <div id="pdfViewer" style="position: relative; width: 100%; flex: 1; padding: 0 4px; box-sizing: border-box; overflow: hidden;">
@@ -421,31 +422,42 @@
     settingIcon.style.color = isVisible ? '#2c3e50' : '#4a90e2';
   }
 
-  // PDF 업로드 및 Firebase에 저장
-  function uploadPDF() {
-    const file = document.getElementById('pdfInput').files[0];
-    if (!file) return alert('PDF 파일을 선택하세요.');
-
+      // Firebase 스토리지에 업로드 경로 설정
     const storageRef = storage.ref();
-    const pdfRef = storageRef.child('pdfs/' + file.name);
-    pdfRef.put(file).then((snapshot) => {
-      alert('PDF 파일이 업로드되었습니다.');
-      pdfRef.getDownloadURL().then((url) => {
-        sessionStorage.setItem('pdfURL', url);  // PDF URL을 세션에 저장
-        document.getElementById('pdfFrame').src = url;  // PDF 미리보기 업데이트
-      });
-    });
-  }
+    const pdfRef = storageRef.child('pdfs/' + file.name); // pdfs 폴더에 파일 저장
 
-  // 저장된 PDF 보기
-  function openSavedPDF() {
+    // 파일 업로드
+    pdfRef.put(file).then((snapshot) => {
+        alert('PDF 파일이 업로드되었습니다.');
+        
+        // 업로드가 완료되면 다운로드 URL을 가져옵니다.
+        pdfRef.getDownloadURL().then((url) => {
+            console.log('PDF 다운로드 URL:', url); // 콘솔에 URL 출력 (확인용)
+
+            // PDF URL을 sessionStorage에 저장
+            sessionStorage.setItem('pdfURL', url);  
+            
+            // PDF 미리보기 업데이트
+            document.getElementById('pdfFrame').src = url; 
+        }).catch((error) => {
+            console.error('다운로드 URL을 가져오는 데 실패했습니다:', error);
+            alert('PDF 다운로드 URL을 가져오는 데 실패했습니다.');
+        });
+    }).catch((error) => {
+        console.error('파일 업로드 중 오류 발생:', error);
+        alert('PDF 업로드 중 오류가 발생했습니다.');
+    });
+}
+
+ // 저장된 PDF 보기
+function openSavedPDF() {
     const url = sessionStorage.getItem('pdfURL');
     if (url) {
-      window.open(url, '_blank');
+        window.open(url, '_blank');  // PDF 새 탭에서 열기
     } else {
-      alert('저장된 PDF가 없습니다.');
+        alert('저장된 PDF가 없습니다.');
     }
-  }
+}
 
   // 로그인 상태 확인 및 화면 표시
   window.addEventListener('load', function () {
