@@ -9,8 +9,8 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
   
-  <!-- Firebase SDK 연결 -->
   <script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-storage.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-database.js"></script>
   
   <style>
@@ -362,6 +362,7 @@
     // Firebase 초기화
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.database(app);
+    const storage = firebase.storage();
   
   function login() {
     const id = document.getElementById('username').value;
@@ -477,21 +478,35 @@ function togglePdfEdit() {
   const pdfInput = document.getElementById('pdfInput');
   const pdfFrame = document.getElementById('pdfFrame');
 
-   // 비상연락망 PDF URL 저장하기
-    function updatePdfUrl(newUrl) {
-      const pdfUrlRef = db.ref('emergencyContacts/pdfUrl');
-      pdfUrlRef.set(newUrl);  // 새로운 PDF URL로 업데이트
+ // 비상연락망 PDF 파일 업로드 및 URL 저장
+    function uploadFile(file) {
+      // 파일을 Firebase Storage에 업로드
+      const storageRef = storage.ref('emergencyContacts/' + file.name); // 경로 설정
+      const uploadTask = storageRef.put(file);
+
+      // 업로드 진행 상태 체크
+      uploadTask.on('state_changed', 
+        (snapshot) => {
+          // 업로드 진행 상태 표시 (예: 퍼센트, 로딩 등)
+        },
+        (error) => {
+          console.log(error.message);
+        }, 
+        () => {
+          // 파일 업로드 완료 후 URL을 가져오기
+          uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+            savePdfUrl(downloadURL);  // 다운로드 URL을 Realtime Database에 저장
+          });
+        }
+      );
     }
 
-    // 비상연락망 PDF URL 읽기
-    const pdfUrlRef = db.ref('emergencyContacts/pdfUrl');
-    pdfUrlRef.on('value', (snapshot) => {
-      const pdfUrl = snapshot.val();  // Firebase에서 가져온 PDF URL
-      if (pdfUrl) {
-        const pdfFrame = document.getElementById('pdfFrame');  // PDF를 표시할 iframe
-        pdfFrame.src = pdfUrl;  // PDF URL로 iframe 소스 설정
-      }
-    });
+    // PDF URL을 Firebase Realtime Database에 저장
+    function savePdfUrl(url) {
+      const pdfUrlRef = db.ref('emergencyContacts/pdfUrl');
+      pdfUrlRef.set(url);  // Firebase Realtime Database에 PDF URL 저장
+    }
+  
     function openSavedPDF() {
   const base64Data = localStorage.getItem('savedPDF');
 
