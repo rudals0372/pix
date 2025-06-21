@@ -242,12 +242,11 @@
   </div>
 </div>
 </div>
-<!-- 비상연락망 화면 -->
-<div id="device-11-content" class="full-screen-info" style="display: none; flex-direction: column; align-items: center;">
+<div id="device-11-content" class="full-screen-info" style="display: none; flex-direction: column; padding: 20px; box-sizing: border-box;">
 
   <!-- 상단 바: 뒤로가기 & 설정 아이콘 -->
-  <div style="position: relative; width: 100%; height: 48px;">
-
+  <div style="position: fixed; top: 0; left: 0; width: 100%; height: 48px; z-index: 999;">
+    
     <!-- 뒤로가기 버튼 (왼쪽 상단 구석) -->
     <button class="close-btn" onclick="goBackToDeviceSelection()" 
             style="position: absolute; top: 0px; left: 0px; padding: 12px; background: none; border: none; cursor: pointer;">
@@ -263,7 +262,7 @@
 
   <!-- 제목 -->
   <h2 style="margin: 10px 0 10px 0; text-align: center;">비상연락망</h2>
-
+  
   <!-- 파일 선택 & 저장 버튼 영역 (초기 숨김) -->
   <div id="pdf-edit-controls" style="width: 100%; display: none; justify-content: flex-end; padding: 0 20px; box-sizing: border-box; margin-bottom: 10px; gap: 10px;">
     <input type="file" id="pdfInput" accept="application/pdf">
