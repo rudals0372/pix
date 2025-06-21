@@ -302,7 +302,7 @@
   </div>
 
  <!-- 자재 리스트 화면 -->
-<div id="material-list" style="width: 100%; display: none; flex-direction: column;">
+<div id="material-list" style="width: 100%; display: none; flex-direction: column; padding: 20px; box-sizing: border-box;">
 
   <!-- 자재 리스트 상단 헤더 (제목 + 설정 아이콘) -->
   <div id="material-list-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -316,7 +316,9 @@
   </div>
 
     <!-- 자재 리스트 항목 -->
-    <div id="material-items" style="flex-grow: 1; overflow-y: auto;"></div>
+      <div id="material-items" style="flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; align-items: flex-start;">
+    <!-- 자재 항목들이 여기에 추가됩니다. -->
+  </div>
 
     <!-- 자재 추가/저장 버튼 영역 -->
     <div style="display: flex; justify-content: space-between; width: 100%; margin-top: 10px;">
