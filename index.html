@@ -302,18 +302,21 @@
   const storage = firebase.storage();  // Firebase 스토리지 서비스
   const database = firebase.database();  // Firebase Realtime Database 서비스
 
-  function login() {
-    const id = document.getElementById('username').value;
-    const pw = document.getElementById('password').value;
 
-    if (id === 'sign' && pw === '7788') {
-      sessionStorage.setItem('isLoggedIn', 'true'); // 로그인 상태 저장
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('device-selection').style.display = 'block';
-    } else {
-      document.getElementById('login-error').style.display = 'block';
-    }
+// 로그인 함수
+function login() {
+  const id = document.getElementById('username').value;
+  const pw = document.getElementById('password').value;
+
+  // 간단한 아이디, 비밀번호 확인
+  if (id === 'sign' && pw === '7788') {
+    sessionStorage.setItem('isLoggedIn', 'true'); // 로그인 상태 저장
+    document.getElementById('login-screen').style.display = 'none'; // 로그인 화면 숨기기
+    document.getElementById('device-selection').style.display = 'block'; // 장비 선택 화면 보이기
+  } else {
+    document.getElementById('login-error').style.display = 'block'; // 로그인 오류 표시
   }
+}
 
   function selectDevice(number) {
     document.getElementById('device-selection').style.display = 'none';
