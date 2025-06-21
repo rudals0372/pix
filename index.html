@@ -348,22 +348,23 @@
 
 </div>
 </div>
+
 <script>
-  const firebaseConfig = {
-      apiKey: "your-api-key",  // Firebase에서 제공하는 API 키
-      authDomain: "your-auth-domain",  // Firebase 프로젝트의 Auth Domain
-      databaseURL: "https://your-database-name.firebaseio.com",  // Firebase Realtime Database URL
-      projectId: "your-project-id",  // Firebase 프로젝트 ID
-      storageBucket: "your-storage-bucket",  // Firebase 스토리지 버킷
-      messagingSenderId: "your-sender-id",  // 메시징 ID
-      appId: "your-app-id"  // Firebase 앱 ID
-    };
+const firebaseConfig = {
+  apiKey: "AIzaSyBFnvY4Adn35uSb0RztjBKkPkRnhuOCYn4",
+  authDomain: "korail-dac64.firebaseapp.com",
+  databaseURL: "https://korail-dac64-default-rtdb.firebaseio.com",
+  projectId: "korail-dac64",
+  storageBucket: "korail-dac64.firebasestorage.app",
+  messagingSenderId: "366259094919",
+  appId: "1:366259094919:web:ab1c74c4f38a799113bf22",
+  measurementId: "G-QL8W3JEP0B"
+};
 
-    // Firebase 앱 초기화
-    const app = firebase.initializeApp(firebaseConfig);
-
-    // Firebase Realtime Database 참조
-    const database = firebase.database();
+  // Firebase 앱 초기화
+  const app = firebase.initializeApp(firebaseConfig);
+  const storage = firebase.storage();  // Firebase 스토리지 서비스
+  const database = firebase.database();  // Firebase Realtime Database 서비스
 
   function login() {
     const id = document.getElementById('username').value;
@@ -384,7 +385,7 @@
     if (number === 1) {
       document.getElementById('main-content').style.display = 'block';
     } else if (number === 11) {
-      document.getElementById('device-11-content').style.display = 'flex';
+      document.getElementById('device-11-content').style.display = 'flex'; // 비상연락망 선택시
     } else if (number === 12) {
       document.getElementById('device-12-content').style.display = 'flex';
     } else {
@@ -393,6 +394,7 @@
     }
   }
 
+  // cardData에 비상연락망 추가
   const cardData = {
     1: {
       title: '매뉴얼',
@@ -414,9 +416,18 @@
         { url: 'https://raw.githubusercontent.com/rudals0372/k/main/docs/2.pdf', name: '점검부2' },
       ],
       type: 'pdf'
+    },
+    11: {
+      title: '비상연락망',
+      content: '',
+      pdfUrls: [
+        { url: 'https://your-pdf-url.com/emergency-contact.pdf', name: '비상연락망' }, // 실제 PDF URL을 여기에 넣으세요
+      ],
+      type: 'pdf'
     }
   };
 
+  // 각 카드 클릭 시 PDF URL 버튼 동적 생성
   document.querySelectorAll('.card[data-card]').forEach(card => {
     card.addEventListener('click', function () {
       const cardNumber = this.getAttribute('data-card');
@@ -465,432 +476,57 @@
     document.getElementById('device-selection').style.display = 'block';
   }
 
-    // 설정 영역 토글
-function togglePdfEdit() {
-  const controls = document.getElementById('pdf-edit-controls');
-  const settingIcon = document.getElementById('settingIcon');
-  const isVisible = controls.style.display === 'flex';
+  // 비상연락망 PDF 업로드 기능
+  function togglePdfEdit() {
+    const controls = document.getElementById('pdf-edit-controls');
+    const settingIcon = document.getElementById('settingIcon');
+    const isVisible = controls.style.display === 'flex';
 
-  controls.style.display = isVisible ? 'none' : 'flex';
-  settingIcon.style.color = isVisible ? '#2c3e50' : '#4a90e2';
-}
+    controls.style.display = isVisible ? 'none' : 'flex';
+    settingIcon.style.color = isVisible ? '#2c3e50' : '#4a90e2';
+  }
 
-  // 파일 입력 이벤트
-  const pdfInput = document.getElementById('pdfInput');
-  const pdfFrame = document.getElementById('pdfFrame');
+  // PDF 업로드 및 Firebase에 저장
+  function uploadPDF() {
+    const file = document.getElementById('pdfInput').files[0];
+    if (!file) return alert('PDF 파일을 선택하세요.');
 
-  pdfInput.addEventListener('change', function () {
-    const file = this.files[0];
-    if (file && file.type === 'application/pdf') {
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        const base64PDF = e.target.result;
-        pdfFrame.src = base64PDF;
-        sessionStorage.setItem('tempPDF', base64PDF);
-      };
-      reader.readAsDataURL(file);
-    }
-  });
+    const storageRef = storage.ref();
+    const pdfRef = storageRef.child('pdfs/' + file.name);
+    pdfRef.put(file).then((snapshot) => {
+      alert('PDF 파일이 업로드되었습니다.');
+      pdfRef.getDownloadURL().then((url) => {
+        sessionStorage.setItem('pdfURL', url);  // PDF URL을 세션에 저장
+        document.getElementById('pdfFrame').src = url;  // PDF 미리보기 업데이트
+      });
+    });
+  }
 
-
-  function savePDF() {
-    const tempPDF = sessionStorage.getItem('tempPDF');
-    if (tempPDF) {
-      localStorage.setItem('savedPDF', tempPDF);
-      alert('PDF가 저장되었습니다.');
+  // 저장된 PDF 보기
+  function openSavedPDF() {
+    const url = sessionStorage.getItem('pdfURL');
+    if (url) {
+      window.open(url, '_blank');
     } else {
-      alert('저장할 PDF가 없습니다.');
+      alert('저장된 PDF가 없습니다.');
     }
   }
 
-    function openSavedPDF() {
-  const base64Data = localStorage.getItem('savedPDF');
-
-  if (!base64Data || !base64Data.startsWith('data:application/pdf;base64,')) {
-    alert('저장된 PDF가 없습니다.');
-    return;
-  }
-
-  const base64 = base64Data.split(',')[1];
-  const binary = atob(base64);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-
-  const blob = new Blob([bytes], { type: 'application/pdf' });
-  const blobUrl = URL.createObjectURL(blob);
-
-  // 브라우저 새 탭에서 열기
-  window.open(blobUrl, '_blank');
-}
+  // 로그인 상태 확인 및 화면 표시
   window.addEventListener('load', function () {
-    // PDF 미리보기
-    const savedPDF = localStorage.getItem('savedPDF');
+    const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+    if (isLoggedIn === 'true') {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('device-selection').style.display = 'block';
+    }
+  });
+
+  // PDF 파일 미리보기 설정
+  window.addEventListener('load', function () {
+    const savedPDF = sessionStorage.getItem('pdfURL');
     if (savedPDF) {
-      pdfFrame.src = savedPDF;
-    }
-
- const overlay = document.getElementById('pdfClickOverlay');
-let downX = 0, downY = 0, downTime = 0;
-
-overlay.addEventListener('pointerdown', (e) => {
-  downX = e.clientX;
-  downY = e.clientY;
-  downTime = Date.now();
-});
-
-overlay.addEventListener('pointerup', (e) => {
-  const upX = e.clientX;
-  const upY = e.clientY;
-  const upTime = Date.now();
-
-  const deltaX = Math.abs(upX - downX);
-  const deltaY = Math.abs(upY - downY);
-  const deltaT = upTime - downTime;
-
-  if (deltaX < 5 && deltaY < 5 && deltaT < 300) {
-    openSavedPDF(); // 클릭 시 PDF 새탭 열기
-  }
-});
-    // 로그인 상태 확인
-    const isLoggedIn = sessionStorage.getItem('isLoggedIn');
-    if (isLoggedIn === 'true') {
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('device-selection').style.display = 'block';
-    }
-  });
-  // 기본 데이터 예시 (팀 - 창고 - 자재)
- // 자재현황 관련 변수와 초기값
-  const defaultMaterialData = {
-    team1: {
-      warehouseA: [
-        { item: '자재1', quantity: 10 },
-        { item: '자재2', quantity: 5 },
-      ],
-      warehouseB: [
-        { item: '자재3', quantity: 20 },
-        { item: '자재4', quantity: 7 },
-      ],
-    },
-    team2: {
-      warehouseC: [
-        { item: '자재5', quantity: 15 },
-        { item: '자재6', quantity: 12 },
-      ],
-    },
-    team3: {
-      warehouseD: [
-        { item: '자재7', quantity: 8 },
-        { item: '자재8', quantity: 25 },
-      ],
-    },
-  };
-
-  let materialData = {};
-  let currentTeam = null;
-  let currentWarehouse = null;
-
-  // 편집 모드 상태 변수
-  let isEditMode = false;
-
-  function loadMaterialData() {
-    const saved = localStorage.getItem('materialData');
-    if (saved) {
-      try {
-        materialData = JSON.parse(saved);
-      } catch {
-        materialData = defaultMaterialData;
-      }
-    } else {
-      materialData = defaultMaterialData;
-    }
-  }
-
-  function saveMaterialData() {
-    if (!currentTeam || !currentWarehouse) return alert('저장할 대상이 없습니다.');
-
-    // 화면에서 수량 가져오기
-    const inputs = document.querySelectorAll('#material-items input[data-item]');
-    inputs.forEach(input => {
-      const item = input.getAttribute('data-item');
-      const qty = parseInt(input.value);
-      if (!isNaN(qty) && qty >= 0) {
-        const materials = materialData[currentTeam][currentWarehouse];
-        const material = materials.find(m => m.item === item);
-        if (material) {
-          material.quantity = qty;
-        }
-      }
-    });
-
-    localStorage.setItem('materialData', JSON.stringify(materialData));
-    alert('저장되었습니다.');
-  }
-
-  // 팀 목록 렌더링
-  function renderTeamList() {
-    const container = document.getElementById('team-cards');
-    container.innerHTML = '';
-    for (const team in materialData) {
-      const div = document.createElement('div');
-      div.className = 'card';
-      div.style.width = '120px';
-      div.style.height = '120px';
-      div.style.display = 'flex';
-      div.style.flexDirection = 'column';
-      div.style.justifyContent = 'center';
-      div.style.alignItems = 'center';
-      div.style.cursor = 'pointer';
-      div.style.fontWeight = '600';
-      div.style.fontSize = '18px';
-      div.textContent = team.toUpperCase();
-      div.onclick = () => selectTeam(team);
-      container.appendChild(div);
-    }
-  }
-
-  function selectTeam(team) {
-    currentTeam = team;
-    document.getElementById('team-list').style.display = 'none';
-    document.getElementById('warehouse-list').style.display = 'block';
-    renderWarehouseList();
-  }
-
-  function renderWarehouseList() {
-    const container = document.getElementById('warehouse-cards');
-    container.innerHTML = '';
-    const warehouses = Object.keys(materialData[currentTeam] || {});
-    warehouses.forEach(warehouse => {
-      const div = document.createElement('div');
-      div.className = 'card';
-      div.style.width = '120px';
-      div.style.height = '120px';
-      div.style.display = 'flex';
-      div.style.flexDirection = 'column';
-      div.style.justifyContent = 'center';
-      div.style.alignItems = 'center';
-      div.style.cursor = 'pointer';
-      div.style.fontWeight = '600';
-      div.style.fontSize = '18px';
-      div.textContent = warehouse;
-      div.onclick = () => selectWarehouse(warehouse);
-      container.appendChild(div);
-    });
-  }
-
-  function selectWarehouse(warehouse) {
-    currentWarehouse = warehouse;
-    document.getElementById('warehouse-list').style.display = 'none';
-    document.getElementById('material-list').style.display = 'flex';
-    renderMaterialList();
-    setEditMode(false);  // 항상 자재 리스트 진입 시 읽기모드로 시작
-  }
-
-  // 뒤로가기 버튼 함수 (팀-창고-자재 흐름)
-  function goBackInMaterialFlow() {
-    const teamList = document.getElementById('team-list');
-    const warehouseList = document.getElementById('warehouse-list');
-    const materialList = document.getElementById('material-list');
-
-    if (materialList.style.display === 'flex') {
-      materialList.style.display = 'none';
-      warehouseList.style.display = 'block';
-      currentWarehouse = null;
-    } else if (warehouseList.style.display === 'block') {
-      warehouseList.style.display = 'none';
-      teamList.style.display = 'block';
-      currentTeam = null;
-    } else {
-      document.getElementById('device-12-content').style.display = 'none';
-      document.getElementById('device-selection').style.display = 'block';
-    }
-  }
-
-  // 편집 모드 상태 설정 함수
-  function setEditMode(on) {
-    isEditMode = on;
-    renderMaterialList();
-
-    const toggleBtn = document.getElementById('toggleEditModeBtn');
-    toggleBtn.style.color = isEditMode ? '#4a90e2' : '#666';
-
-    // 자재추가 버튼 표시 토글
-    document.getElementById('toggleAddMaterialBtn').style.display = isEditMode ? 'inline-block' : 'none';
-
-    // 저장 버튼 표시 토글
-    const saveBtn = document.querySelector('#material-list button[onclick="saveMaterialData()"]');
-    if (saveBtn) saveBtn.style.display = isEditMode ? 'inline-block' : 'none';
-
-    // 자재 추가 폼 닫기 (편집모드 끄면 항상 닫기)
-    if (!isEditMode) {
-      document.getElementById('addMaterialForm').style.display = 'none';
-      document.getElementById('toggleAddMaterialBtn').textContent = '자재추가';
-    }
-  }
-
-  // 설정(편집 모드 토글) 버튼 클릭 이벤트
-  document.getElementById('toggleEditModeBtn').addEventListener('click', () => {
-    setEditMode(!isEditMode);
-  });
-
-  // 자재 리스트 렌더링 함수 (편집 모드에 따라 수정 가능/불가)
-  function renderMaterialList() {
-    const container = document.getElementById('material-items');
-    container.innerHTML = '';
-
-    const materials = materialData[currentTeam][currentWarehouse] || [];
-    document.getElementById('material-list-title').textContent = `${currentTeam.toUpperCase()} - ${currentWarehouse} 자재 현황`;
-
-    materials.forEach(({ item, quantity }, index) => {
-      const row = document.createElement('div');
-      row.style.display = 'flex';
-      row.style.justifyContent = 'space-between';
-      row.style.alignItems = 'center';
-      row.style.marginBottom = '8px';
-
-      const label = document.createElement('span');
-      label.textContent = item;
-      label.style.fontWeight = '600';
-      label.style.flex = '1';
-      label.style.textAlign = 'left';
-
-      const input = document.createElement('input');
-      input.type = 'number';
-      input.min = '0';
-      input.value = quantity;
-      input.setAttribute('data-item', item);
-      input.style.width = '60px';
-      input.style.padding = '4px';
-
-      if (!isEditMode) {
-        input.setAttribute('readonly', 'true'); // 읽기 전용
-        input.style.border = 'none';
-        input.style.backgroundColor = 'transparent';
-        input.style.color = '#333';
-        input.style.cursor = 'default';
-      } else {
-        input.removeAttribute('readonly');
-        input.style.border = '';
-        input.style.backgroundColor = '';
-        input.style.cursor = 'auto';
-      }
-
-      const delBtn = document.createElement('button');
-      delBtn.textContent = '삭제';
-      delBtn.style.marginLeft = '10px';
-      delBtn.style.padding = '4px 8px';
-      delBtn.style.backgroundColor = '#e74c3c';
-      delBtn.style.color = 'white';
-      delBtn.style.border = 'none';
-      delBtn.style.borderRadius = '4px';
-      delBtn.style.cursor = 'pointer';
-      delBtn.onclick = () => {
-        if (confirm(`'${item}' 자재를 삭제할까요?`)) {
-          materialData[currentTeam][currentWarehouse].splice(index, 1);
-          renderMaterialList();
-        }
-      };
-
-      // 편집 모드일 때만 삭제 버튼 보임
-      delBtn.style.display = isEditMode ? 'inline-block' : 'none';
-
-      row.appendChild(label);
-      row.appendChild(input);
-      row.appendChild(delBtn);
-      container.appendChild(row);
-    });
-  }
-
-  // 자재추가 토글 함수
-  function toggleAddMaterial() {
-    const form = document.getElementById('addMaterialForm');
-    const button = document.getElementById('toggleAddMaterialBtn');
-
-    if (form.style.display === 'none') {
-      form.style.display = 'block';
-      button.textContent = '취소';
-    } else {
-      form.style.display = 'none';
-      button.textContent = '자재추가';
-      document.getElementById('newMaterialName').value = '';
-      document.getElementById('newMaterialQty').value = '';
-    }
-  }
-
-  // 자재 추가 확인 함수
-  function confirmAddMaterial() {
-    const nameInput = document.getElementById('newMaterialName');
-    const qtyInput = document.getElementById('newMaterialQty');
-    const name = nameInput.value.trim();
-    const qty = parseInt(qtyInput.value);
-
-    if (!name) {
-      alert('자재 이름을 입력해 주세요.');
-      nameInput.focus();
-      return;
-    }
-    if (isNaN(qty) || qty < 0) {
-      alert('수량은 0 이상의 숫자로 입력해 주세요.');
-      qtyInput.focus();
-      return;
-    }
-
-    const materials = materialData[currentTeam][currentWarehouse];
-    if (materials.find(m => m.item === name)) {
-      alert('이미 같은 이름의 자재가 있습니다.');
-      nameInput.focus();
-      return;
-    }
-
-    // 자재 추가
-    materials.push({ item: name, quantity: qty });
-
-    // 리스트 재렌더링
-    renderMaterialList();
-
-    // 입력폼 초기화 및 닫기
-    nameInput.value = '';
-    qtyInput.value = '';
-    toggleAddMaterial();
-  }
-
-  // 기존 selectDevice 함수에 자재현황 초기화 추가
-  function selectDevice(number) {
-    document.getElementById('device-selection').style.display = 'none';
-
-    if (number === 1) {
-      document.getElementById('main-content').style.display = 'block';
-    } else if (number === 11) {
-      document.getElementById('device-11-content').style.display = 'flex';
-    } else if (number === 12) {
-      document.getElementById('device-12-content').style.display = 'flex';
-      loadMaterialData();
-      renderTeamList();
-
-      // 초기 화면 설정
-      document.getElementById('team-list').style.display = 'block';
-      document.getElementById('warehouse-list').style.display = 'none';
-      document.getElementById('material-list').style.display = 'none';
-
-      setEditMode(false);  // 편집 모드 끄기
-    } else {
-      alert(`${number}번 장비는 아직 연결되지 않았습니다.`);
-      document.getElementById('device-selection').style.display = 'block';
-    }
-  }
-
-  // 초기 로드 시 자재추가, 저장 버튼 숨기기 (편집모드 아니므로)
-  window.addEventListener('load', () => {
-    document.getElementById('toggleAddMaterialBtn').style.display = 'none';
-    const saveBtn = document.querySelector('#material-list button[onclick="saveMaterialData()"]');
-    if (saveBtn) saveBtn.style.display = 'none';
-
-    // 로그인 상태 확인
-    const isLoggedIn = sessionStorage.getItem('isLoggedIn');
-    if (isLoggedIn === 'true') {
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('device-selection').style.display = 'block';
+      document.getElementById('pdfFrame').src = savedPDF;
     }
   });
 </script>
+
