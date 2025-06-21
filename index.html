@@ -8,11 +8,6 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
-  
-  <script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-storage.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-database.js"></script>
-  
   <style>
     body {
       font-family: 'Pretendard', sans-serif;
@@ -188,10 +183,6 @@
     button {
   -webkit-tap-highlight-color: transparent;
 }
-    #uploadButton {
-  z-index: 10;  /* 다른 요소들 위에 오도록 설정 */
-  display: inline-block;  /* 버튼이 숨겨지지 않도록 설정 */
-}
   </style>
 </head>
 <body>
@@ -251,8 +242,8 @@
   </div>
 </div>
 </div>
-  
 <div id="device-11-content" class="full-screen-info" style="display: none; flex-direction: column; padding: 20px; box-sizing: border-box;">
+
   <!-- 상단 바: 뒤로가기 & 설정 아이콘 -->
   <div style="position: fixed; top: 0; left: 0; width: 100%; height: 48px; z-index: 999;">
     
@@ -272,13 +263,11 @@
   <!-- 제목 -->
   <h2 style="margin: 10px 0 10px 0; text-align: center;">비상연락망</h2>
   
-   <!-- 파일 업로드 및 저장 버튼 (초기 숨김) -->
-    <div id="pdf-edit-controls" style="width: 100%; display: none; justify-content: flex-end; padding: 0 20px; box-sizing: border-box; margin-top: 10px; gap: 10px;">
-      <input type="file" id="fileInput" accept="application/pdf" style="flex: 1; padding: 6px;" onchange="handleFileInputChange(event)">
-      <button id="uploadButton" onclick="uploadFile(document.getElementById('fileInput').files[0])" disabled>파일 업로드</button>
-    </div>
-
-
+  <!-- 파일 선택 & 저장 버튼 영역 (초기 숨김) -->
+  <div id="pdf-edit-controls" style="width: 100%; display: none; justify-content: flex-end; padding: 0 20px; box-sizing: border-box; margin-bottom: 10px; gap: 10px;">
+    <input type="file" id="pdfInput" accept="application/pdf">
+    <button onclick="savePDF()">저장</button>
+  </div>
 
   <!-- PDF 미리보기 -->
   <div id="pdfViewer" style="position: relative; width: 100%; flex: 1; padding: 0 4px; box-sizing: border-box; overflow: hidden;">
@@ -288,7 +277,7 @@
     <button onclick="openSavedPDF()" style="position: absolute; bottom: 10px; right: 10px; background-color: rgba(74, 144, 226, 0.9); color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 14px; cursor: pointer;">
       🔍 전체보기
     </button>
-  
+  </div>
 </div>
 </div>
   
@@ -354,8 +343,8 @@
 </div>
 </div>
 <script>
-      // Firebase 설정
-   const firebaseConfig = {
+    // Firebase 설정
+const firebaseConfig = {
   apiKey: "AIzaSyBFnvY4Adn35uSb0RztjBKkPkRnhuOCYn4",
   authDomain: "korail-dac64.firebaseapp.com",
   databaseURL: "https://korail-dac64-default-rtdb.firebaseio.com",
@@ -364,11 +353,8 @@
   messagingSenderId: "366259094919",
   appId: "1:366259094919:web:ab1c74c4f38a799113bf22",
 };
-
-    // Firebase 초기화
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.database(app);
-    const storage = firebase.storage();
+  const app = firebase.initializeApp(firebaseConfig);
+  const db = firebase.database(app);
   
   function login() {
     const id = document.getElementById('username').value;
@@ -484,53 +470,55 @@ function togglePdfEdit() {
   const pdfInput = document.getElementById('pdfInput');
   const pdfFrame = document.getElementById('pdfFrame');
 
- // 비상연락망 PDF 파일 업로드 및 URL 저장
-   function uploadFile(file) {
-      if (!file) {
-        alert('파일을 선택해주세요!');
-        return;
-      }
-
-      // 파일을 Firebase Storage에 업로드
-      const storageRef = storage.ref('emergencyContacts/' + file.name); // 경로 설정
-      const uploadTask = storageRef.put(file);
-
-      // 업로드 진행 상태 체크
-      uploadTask.on('state_changed', 
-        (snapshot) => {
-          // 업로드 진행 상태 표시 (예: 퍼센트, 로딩 등)
-        },
-        (error) => {
-          console.log(error.message);
-        }, 
-        () => {
-          // 파일 업로드 완료 후 URL을 가져오기
-          uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-            savePdfUrl(downloadURL);  // 다운로드 URL을 Realtime Database에 저장
-          });
-        }
-      );
+pdfInput.addEventListener('change', function () {
+    const file = this.files[0];
+    if (file && file.type === 'application/pdf') {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const base64PDF = e.target.result;
+        pdfFrame.src = base64PDF;
+        sessionStorage.setItem('tempPDF', base64PDF);  // Base64 URL을 sessionStorage에 저장
+      };
+      reader.readAsDataURL(file);
     }
-    // PDF URL을 Firebase Realtime Database에 저장
-    function savePdfUrl(url) {
+  });
+
+
+ // PDF 파일 저장
+  function savePDF() {
+    const tempPDF = sessionStorage.getItem('tempPDF');
+    if (tempPDF) {
+      // Firebase에 저장
       const pdfUrlRef = db.ref('emergencyContacts/pdfUrl');
-      pdfUrlRef.set(url);  // Firebase Realtime Database에 PDF URL 저장
+      pdfUrlRef.set(tempPDF)
+        .then(() => {
+          alert('PDF가 Firebase에 저장되었습니다.');
+        })
+        .catch((error) => {
+          console.error('Firebase 저장 실패:', error);
+        });
+    } else {
+      alert('저장할 PDF가 없습니다.');
     }
-  // 파일 입력이 변경될 때 업로드 버튼 활성화
-    function handleFileInputChange(event) {
-      const uploadButton = document.getElementById('uploadButton');
-      if (event.target.files.length > 0) {
-        uploadButton.disabled = false;  // 파일 선택이 되면 업로드 버튼 활성화
-      } else {
-        uploadButton.disabled = true;  // 파일이 없으면 업로드 버튼 비활성화
-      }
-    }
+  }
+  // Firebase에서 PDF URL 실시간으로 읽어오기
+  function listenForPdfUrlChanges() {
+    const pdfUrlRef = db.ref('emergencyContacts/pdfUrl');
+    pdfUrlRef.on('value', (snapshot) => {
+      const updatedPdfUrl = snapshot.val();
+      console.log("실시간으로 업데이트된 PDF URL:", updatedPdfUrl);
+      updatePdfViewer(updatedPdfUrl);
+    });
+  }
 
-  document.getElementById('uploadButton').addEventListener('click', function() {
-  console.log("업로드 버튼 클릭됨");  // 버튼이 클릭되었는지 확인
-  // 업로드 함수 호출
-  uploadFile(document.getElementById('fileInput').files[0]);
-});
+  // PDF 파일을 iframe에서 업데이트
+  function updatePdfViewer(pdfUrl) {
+    const iframe = document.getElementById('pdfFrame');
+    iframe.src = pdfUrl;
+  }
+
+  // Firebase 실시간 데이터 동기화 시작
+  listenForPdfUrlChanges();
   
     function openSavedPDF() {
   const base64Data = localStorage.getItem('savedPDF');
