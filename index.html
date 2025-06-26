@@ -324,132 +324,7 @@
 </div>
 
 <script>
-    // Firebase 설정
-    const firebaseConfig = {
-      apiKey: "AIzaSyBFnvY4Adn35uSb0RztjBKkPkRnhuOCYn4",
-      authDomain: "korail-dac64.firebaseapp.com",
-      databaseURL: "https://korail-dac64-default-rtdb.firebaseio.com",
-      projectId: "korail-dac64",
-      storageBucket: "korail-dac64.firebasestorage.app",
-      messagingSenderId: "366259094919",
-      appId: "1:366259094919:web:ab1c74c4f38a799113bf22",
-    };
-    // Firebase 설정
-    const firebaseConfig = {
-      apiKey: "AIzaSyBFnvY4Adn35uSb0RztjBKkPkRnhuOCYn4",
-      authDomain: "korail-dac64.firebaseapp.com",
-      databaseURL: "https://korail-dac64-default-rtdb.firebaseio.com",
-      projectId: "korail-dac64",
-      storageBucket: "korail-dac64.firebasestorage.app",
-      messagingSenderId: "366259094919",
-      appId: "1:366259094919:web:ab1c74c4f38a799113bf22",
-    };
-
-    // Firebase 초기화
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    // 데이터베이스에서 자재 목록 가져오기
-    const materialRef = db.ref('materials');
-    materialRef.on('value', function(snapshot) {
-      const data = snapshot.val();
-      renderMaterialList(data);
-    });
-
-    // 자재 목록 렌더링
-    function renderMaterialList(materials) {
-      const materialListDiv = document.getElementById('material-list');
-      materialListDiv.innerHTML = ''; // 기존 자재 목록 초기화
-
-      for (const key in materials) {
-        const material = materials[key];
-        const div = document.createElement('div');
-        div.textContent = `${material.name}: ${material.quantity}`;
-
-        // 수정 버튼
-        const editButton = document.createElement('button');
-        editButton.textContent = '수정';
-        editButton.onclick = () => {
-          loadMaterialForEdit(key, material);
-        };
-
-        // 삭제 버튼
-        const deleteButton = document.createElement('button');
-        deleteButton.textContent = '삭제';
-        deleteButton.onclick = () => {
-          if (window.confirm("삭제하시겠습니까?")) {
-            deleteMaterial(key);
-          }
-        };
-
-        div.appendChild(editButton);
-        div.appendChild(deleteButton);
-        materialListDiv.appendChild(div);
-      }
-    }
-
-    // 자재 수정 폼에 데이터 로드
-    function loadMaterialForEdit(key, material) {
-      document.getElementById('material-name').value = material.name;
-      document.getElementById('material-quantity').value = material.quantity;
-
-      // 수정하기 버튼 클릭 시 데이터베이스에 수정된 데이터 저장
-      const saveButton = document.getElementById('save-material-button');
-      saveButton.onclick = () => {
-        if (window.confirm("수정하시겠습니까?")) {
-          saveMaterialEdits(key);
-        }
-      };
-    }
-
-    // 수정된 자재 데이터 저장
-    function saveMaterialEdits(key) {
-      const updatedName = document.getElementById('material-name').value;
-      const updatedQuantity = document.getElementById('material-quantity').value;
-
-      const materialToUpdate = {
-        name: updatedName,
-        quantity: updatedQuantity
-      };
-
-      // Firebase에 수정된 데이터 저장
-      const materialRefToUpdate = db.ref('materials/' + key);
-      materialRefToUpdate.set(materialToUpdate);
-
-      // 수정 후 폼 초기화
-      document.getElementById('material-name').value = '';
-      document.getElementById('material-quantity').value = '';
-    }
-
-    // 자재 추가
-    document.getElementById('add-material-btn').onclick = function() {
-      const name = document.getElementById('material-name').value;
-      const quantity = document.getElementById('material-quantity').value;
-
-      if (name && quantity) {
-        const newMaterialRef = materialRef.push();
-        newMaterialRef.set({
-          name: name,
-          quantity: quantity
-        });
-
-        // 자재 추가 후 입력창 초기화
-        document.getElementById('material-name').value = '';
-        document.getElementById('material-quantity').value = '';
-      }
-    };
-
-    // 자재 삭제
-    function deleteMaterial(key) {
-      const materialToDeleteRef = db.ref('materials/' + key);
-      materialToDeleteRef.remove();
-    }
-
-    // 설정 버튼 클릭 시 메뉴 보이기
-    document.getElementById('settings-button').onclick = function() {
-      const settingsMenu = document.getElementById('settings-menu');
-      settingsMenu.style.display = settingsMenu.style.display === 'none' ? 'block' : 'none';
-    };
+   
   function login() {
     const id = document.getElementById('username').value;
     const pw = document.getElementById('password').value;
@@ -691,7 +566,132 @@
       document.getElementById('device-selection').style.display = 'block';
     }
   }
+ // Firebase 설정
+    const firebaseConfig = {
+      apiKey: "AIzaSyBFnvY4Adn35uSb0RztjBKkPkRnhuOCYn4",
+      authDomain: "korail-dac64.firebaseapp.com",
+      databaseURL: "https://korail-dac64-default-rtdb.firebaseio.com",
+      projectId: "korail-dac64",
+      storageBucket: "korail-dac64.firebasestorage.app",
+      messagingSenderId: "366259094919",
+      appId: "1:366259094919:web:ab1c74c4f38a799113bf22",
+    };
+    // Firebase 설정
+    const firebaseConfig = {
+      apiKey: "AIzaSyBFnvY4Adn35uSb0RztjBKkPkRnhuOCYn4",
+      authDomain: "korail-dac64.firebaseapp.com",
+      databaseURL: "https://korail-dac64-default-rtdb.firebaseio.com",
+      projectId: "korail-dac64",
+      storageBucket: "korail-dac64.firebasestorage.app",
+      messagingSenderId: "366259094919",
+      appId: "1:366259094919:web:ab1c74c4f38a799113bf22",
+    };
 
+    // Firebase 초기화
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // 데이터베이스에서 자재 목록 가져오기
+    const materialRef = db.ref('materials');
+    materialRef.on('value', function(snapshot) {
+      const data = snapshot.val();
+      renderMaterialList(data);
+    });
+
+    // 자재 목록 렌더링
+    function renderMaterialList(materials) {
+      const materialListDiv = document.getElementById('material-list');
+      materialListDiv.innerHTML = ''; // 기존 자재 목록 초기화
+
+      for (const key in materials) {
+        const material = materials[key];
+        const div = document.createElement('div');
+        div.textContent = `${material.name}: ${material.quantity}`;
+
+        // 수정 버튼
+        const editButton = document.createElement('button');
+        editButton.textContent = '수정';
+        editButton.onclick = () => {
+          loadMaterialForEdit(key, material);
+        };
+
+        // 삭제 버튼
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = '삭제';
+        deleteButton.onclick = () => {
+          if (window.confirm("삭제하시겠습니까?")) {
+            deleteMaterial(key);
+          }
+        };
+
+        div.appendChild(editButton);
+        div.appendChild(deleteButton);
+        materialListDiv.appendChild(div);
+      }
+    }
+
+    // 자재 수정 폼에 데이터 로드
+    function loadMaterialForEdit(key, material) {
+      document.getElementById('material-name').value = material.name;
+      document.getElementById('material-quantity').value = material.quantity;
+
+      // 수정하기 버튼 클릭 시 데이터베이스에 수정된 데이터 저장
+      const saveButton = document.getElementById('save-material-button');
+      saveButton.onclick = () => {
+        if (window.confirm("수정하시겠습니까?")) {
+          saveMaterialEdits(key);
+        }
+      };
+    }
+
+    // 수정된 자재 데이터 저장
+    function saveMaterialEdits(key) {
+      const updatedName = document.getElementById('material-name').value;
+      const updatedQuantity = document.getElementById('material-quantity').value;
+
+      const materialToUpdate = {
+        name: updatedName,
+        quantity: updatedQuantity
+      };
+
+      // Firebase에 수정된 데이터 저장
+      const materialRefToUpdate = db.ref('materials/' + key);
+      materialRefToUpdate.set(materialToUpdate);
+
+      // 수정 후 폼 초기화
+      document.getElementById('material-name').value = '';
+      document.getElementById('material-quantity').value = '';
+    }
+
+    // 자재 추가
+    document.getElementById('add-material-btn').onclick = function() {
+      const name = document.getElementById('material-name').value;
+      const quantity = document.getElementById('material-quantity').value;
+
+      if (name && quantity) {
+        const newMaterialRef = materialRef.push();
+        newMaterialRef.set({
+          name: name,
+          quantity: quantity
+        });
+
+        // 자재 추가 후 입력창 초기화
+        document.getElementById('material-name').value = '';
+        document.getElementById('material-quantity').value = '';
+      }
+    };
+
+    // 자재 삭제
+    function deleteMaterial(key) {
+      const materialToDeleteRef = db.ref('materials/' + key);
+      materialToDeleteRef.remove();
+    }
+
+    // 설정 버튼 클릭 시 메뉴 보이기
+    document.getElementById('settings-button').onclick = function() {
+      const settingsMenu = document.getElementById('settings-menu');
+      settingsMenu.style.display = settingsMenu.style.display === 'none' ? 'block' : 'none';
+    };
 
   // 기존 selectDevice 함수에 자재현황 초기화 추가
   function selectDevice(number) {
