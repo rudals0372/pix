@@ -7,6 +7,9 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
   <style>
     body {
       font-family: 'Pretendard', sans-serif;
@@ -319,11 +322,9 @@
 
   <div id="material-list"></div>
 </div>
-   <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js';
-    import { getDatabase, ref, set, push, remove, onValue } from 'https://www.gstatic.com/firebasejs/9.1.0/firebase-database.js';
 
-    // Firebase Config
+<script>
+    // Firebase 설정
     const firebaseConfig = {
       apiKey: "AIzaSyBFnvY4Adn35uSb0RztjBKkPkRnhuOCYn4",
       authDomain: "korail-dac64.firebaseapp.com",
@@ -334,13 +335,13 @@
       appId: "1:366259094919:web:ab1c74c4f38a799113bf22",
     };
 
-    // Firebase 앱 초기화
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    // Firebase 초기화
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
     // 데이터베이스에서 자재 목록 가져오기
-    const materialRef = ref(db, 'materials');
-    onValue(materialRef, (snapshot) => {
+    const materialRef = db.ref('materials');
+    materialRef.on('value', function(snapshot) {
       const data = snapshot.val();
       renderMaterialList(data);
     });
@@ -349,18 +350,19 @@
     function renderMaterialList(materials) {
       const materialListDiv = document.getElementById('material-list');
       materialListDiv.innerHTML = ''; // 기존 자재 목록 초기화
+
       for (const key in materials) {
         const material = materials[key];
         const div = document.createElement('div');
         div.textContent = `${material.name}: ${material.quantity}`;
-        
+
         // 수정 버튼
         const editButton = document.createElement('button');
         editButton.textContent = '수정';
         editButton.onclick = () => {
           loadMaterialForEdit(key, material);
         };
-        
+
         // 삭제 버튼
         const deleteButton = document.createElement('button');
         deleteButton.textContent = '삭제';
@@ -369,7 +371,7 @@
             deleteMaterial(key);
           }
         };
-        
+
         div.appendChild(editButton);
         div.appendChild(deleteButton);
         materialListDiv.appendChild(div);
@@ -401,8 +403,8 @@
       };
 
       // Firebase에 수정된 데이터 저장
-      const materialRefToUpdate = ref(db, 'materials/' + key);
-      set(materialRefToUpdate, materialToUpdate);
+      const materialRefToUpdate = db.ref('materials/' + key);
+      materialRefToUpdate.set(materialToUpdate);
 
       // 수정 후 폼 초기화
       document.getElementById('material-name').value = '';
@@ -415,8 +417,8 @@
       const quantity = document.getElementById('material-quantity').value;
 
       if (name && quantity) {
-        const newMaterialRef = push(materialRef);
-        set(newMaterialRef, {
+        const newMaterialRef = materialRef.push();
+        newMaterialRef.set({
           name: name,
           quantity: quantity
         });
@@ -429,8 +431,8 @@
 
     // 자재 삭제
     function deleteMaterial(key) {
-      const materialToDeleteRef = ref(db, 'materials/' + key);
-      remove(materialToDeleteRef);
+      const materialToDeleteRef = db.ref('materials/' + key);
+      materialToDeleteRef.remove();
     }
 
     // 설정 버튼 클릭 시 메뉴 보이기
@@ -438,9 +440,6 @@
       const settingsMenu = document.getElementById('settings-menu');
       settingsMenu.style.display = settingsMenu.style.display === 'none' ? 'block' : 'none';
     };
-  </script>
-
-<script>
   function login() {
     const id = document.getElementById('username').value;
     const pw = document.getElementById('password').value;
@@ -718,7 +717,7 @@
       document.getElementById('device-selection').style.display = 'block';
     }
   });
-  console.log("기본 스크립트 실행 중");
+
 </script>
   
  
