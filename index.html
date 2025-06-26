@@ -325,6 +325,19 @@
     </div>
 </div>
 <script type="module">
+    
+  function login() {
+    const id = document.getElementById('username').value;
+    const pw = document.getElementById('password').value;
+
+    if (id === 'sign' && pw === '7788') {
+      sessionStorage.setItem('isLoggedIn', 'true'); // 로그인 상태 저장
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('device-selection').style.display = 'block';
+    } else {
+      document.getElementById('login-error').style.display = 'block';
+    }
+  }
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js';
     import { getDatabase, ref, set, push, remove, onValue } from 'https://www.gstatic.com/firebasejs/9.1.0/firebase-database.js';
 
@@ -348,19 +361,7 @@
       const data = snapshot.val();
       renderMaterialList(data);
     });
-  
-  function login() {
-    const id = document.getElementById('username').value;
-    const pw = document.getElementById('password').value;
 
-    if (id === 'sign' && pw === '7788') {
-      sessionStorage.setItem('isLoggedIn', 'true'); // 로그인 상태 저장
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('device-selection').style.display = 'block';
-    } else {
-      document.getElementById('login-error').style.display = 'block';
-    }
-  }
 
   function selectDevice(number) {
     document.getElementById('device-selection').style.display = 'none';
