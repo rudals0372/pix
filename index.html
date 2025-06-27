@@ -484,6 +484,7 @@
     }
   });
   
+// 기본 자재 데이터 정의
 const defaultMaterialData = {
   team1: {
     warehouseA: [
@@ -512,31 +513,29 @@ const defaultMaterialData = {
 // materialData에 기본 데이터 할당
 let materialData = defaultMaterialData;
 
-  let currentTeam = null;
-  let currentWarehouse = null;
+// 팀 목록 렌더링
+function renderTeamList() {
+  const container = document.getElementById('team-cards');
+  container.innerHTML = ''; // 기존 내용 비우기
 
-
-  // 팀 목록 렌더링
-  function renderTeamList() {
-    const container = document.getElementById('team-cards');
-    container.innerHTML = '';
-    for (const team in materialData) {
-      const div = document.createElement('div');
-      div.className = 'card';
-      div.style.width = '120px';
-      div.style.height = '120px';
-      div.style.display = 'flex';
-      div.style.flexDirection = 'column';
-      div.style.justifyContent = 'center';
-      div.style.alignItems = 'center';
-      div.style.cursor = 'pointer';
-      div.style.fontWeight = '600';
-      div.style.fontSize = '18px';
-      div.textContent = team.toUpperCase();
-      div.onclick = () => selectTeam(team);
-      container.appendChild(div);
-    }
+  // materialData에서 팀 목록을 가져와 렌더링
+  for (const team in materialData) {
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.style.width = '120px';
+    div.style.height = '120px';
+    div.style.display = 'flex';
+    div.style.flexDirection = 'column';
+    div.style.justifyContent = 'center';
+    div.style.alignItems = 'center';
+    div.style.cursor = 'pointer';
+    div.style.fontWeight = '600';
+    div.style.fontSize = '18px';
+    div.textContent = team.toUpperCase();
+    div.onclick = () => selectTeam(team); // 팀 선택 시 해당 팀으로 이동
+    container.appendChild(div);
   }
+}
 
   function selectTeam(team) {
     currentTeam = team;
