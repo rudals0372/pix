@@ -580,11 +580,15 @@
     const db = firebase.database();
 
     // 데이터베이스에서 자재 목록 가져오기
-    const materialRef = db.ref('materials');
-    materialRef.on('value', function(snapshot) {
-      const data = snapshot.val();
-      renderMaterialList(data);
-    });
+  function loadMaterialData() {
+  const materialRef = firebase.database().ref('materials');
+  materialRef.once('value', function(snapshot) {
+    const materials = snapshot.val();
+    if (materials) {
+      renderMaterialList(materials);
+    }
+  });
+}
 
     // 자재 목록 렌더링
     function renderMaterialList(materials) {
