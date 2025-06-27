@@ -272,6 +272,9 @@
   <iframe id="pdfFrame" width="100%" height="100%" style="border: 1px solid #ccc;"></iframe>
 </div>
 </div>
+
+
+  
 <!-- 자재현황 화면 -->
 <div id="device-12-content" class="full-screen-info" style="display: none; flex-direction: column; padding: 20px; box-sizing: border-box;">
 
@@ -490,7 +493,9 @@
     }
   });
                           
-
+  let materialData = {};
+  let currentTeam = null;
+  let currentWarehouse = null;
 
 
   // 팀 목록 렌더링
@@ -591,9 +596,7 @@ function selectWarehouse(warehouse) {
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
   
-  let materialData = {};
-  let currentTeam = null;
-  let currentWarehouse = null;
+
   
     // 데이터베이스에서 자재 목록 가져오기
   function loadMaterialData() {
