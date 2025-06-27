@@ -342,7 +342,8 @@
     } else if (number === 11) {
       document.getElementById('device-11-content').style.display = 'flex';
     } else if (number === 12) {
-      document.getElementById('device-12-content').style.display = 'flex';   
+      document.getElementById('device-12-content').style.display = 'flex';
+    document.getElementById('team-cards').style.display = 'block'; 
     } else {
       alert(`${number}번 장비는 아직 연결되지 않았습니다.`);
       document.getElementById('device-selection').style.display = 'block';
@@ -501,12 +502,7 @@
     let selectedMaterialKey = null;
     let settingsVisible = false; // 설정 메뉴가 보이는지 여부를 추적
 
- // 자재현황 화면을 띄우는 코드
-document.getElementById('device-12-content').onclick = function() {
-  // 자재현황 화면 보이기
-  document.getElementById('device-12-content').style.display = 'none';
-  document.getElementById('team-cards').style.display = 'block'; 
-};
+
 
 // 팀 선택 시 창고 선택 카드 보이기
 document.getElementById('team-1').onclick = function() { selectTeam(1); };
