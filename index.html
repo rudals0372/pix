@@ -280,7 +280,7 @@
 <div id="device-12-content" class="full-screen-info" style="display: none; flex-direction: column; padding: 20px; box-sizing: border-box;">
 
   <!-- 뒤로가기 버튼 -->
-  <button class="close-btn" onclick="goBackToDeviceSelection()">
+  <button class="close-btn" onclick="goBackFromMaterialView()">
     <i class="material-icons">arrow_back</i>
   </button>
  <!-- 팀 선택 카드들 -->
@@ -657,7 +657,37 @@ document.getElementById('settings-button').onclick = function() {
   addMaterialButton.classList.toggle('hidden');
 };
 
+let materialViewState = 'team'; 
+// team → warehouse → material
+  
+function goBackFromMaterialView() {
+  if (materialViewState === 'material') {
+    document.getElementById('material-list').style.display = 'none';
+    document.getElementById('warehouse-cards').style.display = 'block';
+    materialViewState = 'warehouse';
+  } else if (materialViewState === 'warehouse') {
+    document.getElementById('warehouse-cards').style.display = 'none';
+    document.getElementById('team-cards').style.display = 'block';
+    materialViewState = 'team';
+  } else {
+    document.getElementById('device-12-content').style.display = 'none';
+    document.getElementById('device-selection').style.display = 'block';
+  }
+}
+function selectTeam(teamId) {
+  selectedTeam = teamId;
+  document.getElementById('team-cards').style.display = 'none';
+  document.getElementById('warehouse-cards').style.display = 'block';
+  materialViewState = 'warehouse'; // 상태 갱신
+}
 
+function selectWarehouse(warehouseId) {
+  selectedWarehouse = warehouseId;
+  document.getElementById('warehouse-cards').style.display = 'none';
+  document.getElementById('material-list').style.display = 'block';
+  loadMaterialData();
+  materialViewState = 'material'; // 상태 갱신
+}
 
 
     // 로그인 상태 확인
