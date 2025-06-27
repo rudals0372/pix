@@ -347,6 +347,15 @@
       document.getElementById('device-11-content').style.display = 'flex';
     } else if (number === 12) {
       document.getElementById('device-12-content').style.display = 'flex';
+      loadMaterialData();
+      renderTeamList();
+
+      // 초기 화면 설정
+      document.getElementById('team-list').style.display = 'block';
+      document.getElementById('warehouse-list').style.display = 'none';
+      document.getElementById('material-list').style.display = 'none';
+
+    
     } else {
       alert(`${number}번 장비는 아직 연결되지 않았습니다.`);
       document.getElementById('device-selection').style.display = 'block';
@@ -703,30 +712,6 @@ document.getElementById('settings-button').onclick = function() {
 };
 
 
-  // 기존 selectDevice 함수에 자재현황 초기화 추가
-  function selectDevice(number) {
-    document.getElementById('device-selection').style.display = 'none';
-
-    if (number === 1) {
-      document.getElementById('main-content').style.display = 'block';
-    } else if (number === 11) {
-      document.getElementById('device-11-content').style.display = 'flex';
-    } else if (number === 12) {
-      document.getElementById('device-12-content').style.display = 'flex';
-      loadMaterialData();
-      renderTeamList();
-
-      // 초기 화면 설정
-      document.getElementById('team-list').style.display = 'block';
-      document.getElementById('warehouse-list').style.display = 'none';
-      document.getElementById('material-list').style.display = 'none';
-
-    
-    } else {
-      alert(`${number}번 장비는 아직 연결되지 않았습니다.`);
-      document.getElementById('device-selection').style.display = 'block';
-    }
-  }
 
 
 
