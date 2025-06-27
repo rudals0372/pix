@@ -535,13 +535,13 @@
     });
   }
 
-  function selectWarehouse(warehouse) {
-    currentWarehouse = warehouse;
-    document.getElementById('warehouse-list').style.display = 'none';
-    document.getElementById('material-list').style.display = 'flex';
-    renderMaterialList();
-    setEditMode(false);  // 항상 자재 리스트 진입 시 읽기모드로 시작
-  }
+  // 창고 선택 후 자재 목록 표시
+function selectWarehouse(warehouse) {
+  currentWarehouse = warehouse;
+  document.getElementById('warehouse-list').style.display = 'none';
+  document.getElementById('material-list').style.display = 'flex';
+  renderMaterialList(materialData[currentTeam][currentWarehouse]);
+}
 
   // 뒤로가기 버튼 함수 (팀-창고-자재 흐름)
   function goBackInMaterialFlow() {
@@ -636,54 +636,65 @@
       };
     }
 
-    // 수정된 자재 데이터 저장
-    function saveMaterialEdits(key) {
-      const updatedName = document.getElementById('material-name').value;
-      const updatedQuantity = document.getElementById('material-quantity').value;
+   // 자재 수정 후 데이터 업데이트
+function saveMaterialEdits(key) {
+  const updatedName = document.getElementById('material-name').value;
+  const updatedQuantity = document.getElementById('material-quantity').value;
 
-      const materialToUpdate = {
-        name: updatedName,
-        quantity: updatedQuantity
-      };
+  const materialToUpdate = {
+    name: updatedName,
+    quantity: updatedQuantity
+  };
 
-      // Firebase에 수정된 데이터 저장
-      const materialRefToUpdate = db.ref('materials/' + key);
-      materialRefToUpdate.set(materialToUpdate);
+  // Firebase에 수정된 데이터 저장
+  const materialRefToUpdate = firebase.database().ref('materials/' + key);
+  materialRefToUpdate.set(materialToUpdate);
 
-      // 수정 후 폼 초기화
-      document.getElementById('material-name').value = '';
-      document.getElementById('material-quantity').value = '';
-    }
+  // 수정 후 폼 초기화
+  document.getElementById('material-name').value = '';
+  document.getElementById('material-quantity').value = '';
 
-    // 자재 추가
-    document.getElementById('add-material-btn').onclick = function() {
-      const name = document.getElementById('material-name').value;
-      const quantity = document.getElementById('material-quantity').value;
+  // 수정된 자재 목록 다시 렌더링
+  loadMaterialData();
+}
 
-      if (name && quantity) {
-        const newMaterialRef = materialRef.push();
-        newMaterialRef.set({
-          name: name,
-          quantity: quantity
-        });
+// 자재 추가
+document.getElementById('add-material-btn').onclick = function() {
+  const name = document.getElementById('material-name').value;
+  const quantity = document.getElementById('material-quantity').value;
 
-        // 자재 추가 후 입력창 초기화
-        document.getElementById('material-name').value = '';
-        document.getElementById('material-quantity').value = '';
-      }
-    };
+  if (name && quantity) {
+    const newMaterialRef = firebase.database().ref('materials').push();
+    newMaterialRef.set({
+      name: name,
+      quantity: quantity
+    });
 
-    // 자재 삭제
-    function deleteMaterial(key) {
-      const materialToDeleteRef = db.ref('materials/' + key);
-      materialToDeleteRef.remove();
-    }
+    // 자재 추가 후 입력창 초기화
+    document.getElementById('material-name').value = '';
+    document.getElementById('material-quantity').value = '';
 
-    // 설정 버튼 클릭 시 메뉴 보이기
-    document.getElementById('settings-button').onclick = function() {
-      const settingsMenu = document.getElementById('settings-menu');
-      settingsMenu.style.display = settingsMenu.style.display === 'none' ? 'block' : 'none';
-    };
+    // 자재 목록 다시 렌더링
+    loadMaterialData();
+  }
+};
+
+// 자재 삭제
+function deleteMaterial(key) {
+  const materialToDeleteRef = firebase.database().ref('materials/' + key);
+  materialToDeleteRef.remove();
+
+  // 자재 목록 다시 렌더링
+  loadMaterialData();
+}
+
+
+   // 설정 버튼 클릭 시 메뉴 보이기
+document.getElementById('settings-button').onclick = function() {
+  const settingsMenu = document.getElementById('settings-menu');
+  settingsMenu.style.display = settingsMenu.style.display === 'none' ? 'block' : 'none';
+};
+
 
   // 기존 selectDevice 함수에 자재현황 초기화 추가
   function selectDevice(number) {
