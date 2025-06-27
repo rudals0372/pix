@@ -349,16 +349,7 @@
     } else if (number === 11) {
       document.getElementById('device-11-content').style.display = 'flex';
     } else if (number === 12) {
-      document.getElementById('device-12-content').style.display = 'flex';
-      loadMaterialData();
-      renderTeamList();
-
-      // 초기 화면 설정
-      document.getElementById('team-list').style.display = 'block';
-      document.getElementById('warehouse-list').style.display = 'none';
-      document.getElementById('material-list').style.display = 'none';
-
-    
+      document.getElementById('device-12-content').style.display = 'flex';   
     } else {
       alert(`${number}번 장비는 아직 연결되지 않았습니다.`);
       document.getElementById('device-selection').style.display = 'block';
@@ -492,7 +483,32 @@
       pdfFrame.src = savedPDF;
     }
   });
-                          
+  
+   const defaultMaterialData = {
+    team1: {
+      warehouseA: [
+        { item: '자재1', quantity: 10 },
+        { item: '자재2', quantity: 5 },
+      ],
+      warehouseB: [
+        { item: '자재3', quantity: 20 },
+        { item: '자재4', quantity: 7 },
+      ],
+    },
+    team2: {
+      warehouseC: [
+        { item: '자재5', quantity: 15 },
+        { item: '자재6', quantity: 12 },
+      ],
+    },
+    team3: {
+      warehouseD: [
+        { item: '자재7', quantity: 8 },
+        { item: '자재8', quantity: 25 },
+      ],
+    },
+  };        
+  
   let materialData = {};
   let currentTeam = null;
   let currentWarehouse = null;
