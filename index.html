@@ -501,164 +501,166 @@
     let selectedMaterialKey = null;
     let settingsVisible = false; // 설정 메뉴가 보이는지 여부를 추적
 
-    // 자재 현황 카드 클릭 시 팀 선택 카드 보이기
-    document.getElementById('device-12-content').onclick = function() {
-         document.getElementById('warehouse-cards').style.display = 'none'; // 창고 카드 보이기
-      document.getElementById('team-cards').style.display = 'block'; 
-    };
+ // 자재현황 화면을 띄우는 코드
+document.getElementById('device-12-content').onclick = function() {
+  // 자재현황 화면 보이기
+  document.getElementById('device-12-content').style.display = 'none';
+  document.getElementById('team-cards').style.display = 'block'; 
+};
 
-    // 팀 선택 시 창고 카드 보이기
-    document.getElementById('team-1').onclick = function() { selectTeam(1); };
-    document.getElementById('team-2').onclick = function() { selectTeam(2); };
-    document.getElementById('team-3').onclick = function() { selectTeam(3); };
+// 팀 선택 시 창고 선택 카드 보이기
+document.getElementById('team-1').onclick = function() { selectTeam(1); };
+document.getElementById('team-2').onclick = function() { selectTeam(2); };
+document.getElementById('team-3').onclick = function() { selectTeam(3); };
 
-    function selectTeam(teamId) {
-      selectedTeam = teamId;
-      document.getElementById('team-cards').style.display = 'none'; // 팀 카드 숨김
-      document.getElementById('warehouse-cards').style.display = 'block'; // 창고 카드 보이기
-    }
+function selectTeam(teamId) {
+  selectedTeam = teamId;
+  document.getElementById('team-cards').style.display = 'none'; // 팀 카드 숨김
+  document.getElementById('warehouse-cards').style.display = 'block'; // 창고 카드 보이기
+}
 
-    // 창고 선택 시 자재 목록 보이기
-    document.getElementById('warehouse-1').onclick = function() { selectWarehouse(1); };
-    document.getElementById('warehouse-2').onclick = function() { selectWarehouse(2); };
-    document.getElementById('warehouse-3').onclick = function() { selectWarehouse(3); };
-    document.getElementById('warehouse-4').onclick = function() { selectWarehouse(4); };
+// 창고 선택 시 자재 목록 보이기
+document.getElementById('warehouse-1').onclick = function() { selectWarehouse(1); };
+document.getElementById('warehouse-2').onclick = function() { selectWarehouse(2); };
+document.getElementById('warehouse-3').onclick = function() { selectWarehouse(3); };
+document.getElementById('warehouse-4').onclick = function() { selectWarehouse(4); };
 
-    function selectWarehouse(warehouseId) {
-      selectedWarehouse = warehouseId;
-      document.getElementById('warehouse-cards').style.display = 'none'; // 창고 카드 숨김
-      document.getElementById('material-list').style.display = 'block'; // 자재 목록 보이기
-      loadMaterialData();
-    }
+function selectWarehouse(warehouseId) {
+  selectedWarehouse = warehouseId;
+  document.getElementById('warehouse-cards').style.display = 'none'; // 창고 카드 숨김
+  document.getElementById('material-list').style.display = 'block'; // 자재 목록 보이기
+  loadMaterialData(); // 자재 데이터 로드
+}
 
-    // 선택된 창고에 해당하는 자재 데이터를 로드하는 함수 (Firebase에서 데이터 가져오기)
-    function loadMaterialData() {
-      const materialRef = db.ref(`teams/team${selectedTeam}/warehouses/warehouse${selectedWarehouse}/materials`);
-      materialRef.once('value', function(snapshot) {
-        const materials = snapshot.val();
-        renderMaterialList(materials);
-      });
-    }
+// 선택된 창고에 해당하는 자재 데이터를 로드하는 함수 (Firebase에서 데이터 가져오기)
+function loadMaterialData() {
+  const materialRef = db.ref(`teams/team${selectedTeam}/warehouses/warehouse${selectedWarehouse}/materials`);
+  materialRef.once('value', function(snapshot) {
+    const materials = snapshot.val();
+    renderMaterialList(materials); // 자재 목록 렌더링
+  });
+}
 
-    // 자재 목록 렌더링
-    function renderMaterialList(materials) {
-      const container = document.getElementById('material-list-container');
-      container.innerHTML = ''; // 자재 목록 초기화
+// 자재 목록 렌더링
+function renderMaterialList(materials) {
+  const container = document.getElementById('material-list-container');
+  container.innerHTML = ''; // 자재 목록 초기화
 
-      if (materials) {
-        for (const key in materials) {
-          const material = materials[key];
-          const div = document.createElement('div');
-          div.className = 'card';
-          div.textContent = `${material.name}: ${material.quantity}`;
+  if (materials) {
+    for (const key in materials) {
+      const material = materials[key];
+      const div = document.createElement('div');
+      div.className = 'card';
+      div.textContent = `${material.name}: ${material.quantity}`;
 
-          // 수정 버튼 (기본적으로 숨기기)
-          const editButton = document.createElement('button');
-          editButton.textContent = '수정';
-          editButton.classList.add('hidden');
-          editButton.onclick = () => {
-            loadMaterialForEdit(key, material);
-          };
+      // 수정 버튼 (기본적으로 숨기기)
+      const editButton = document.createElement('button');
+      editButton.textContent = '수정';
+      editButton.classList.add('hidden');
+      editButton.onclick = () => {
+        loadMaterialForEdit(key, material);
+      };
 
-          // 삭제 버튼 (기본적으로 숨기기)
-          const deleteButton = document.createElement('button');
-          deleteButton.textContent = '삭제';
-          deleteButton.classList.add('hidden');
-          deleteButton.onclick = () => {
-            if (window.confirm("삭제하시겠습니까?")) {
-              deleteMaterial(key);
-            }
-          };
-
-          div.appendChild(editButton);
-          div.appendChild(deleteButton);
-          container.appendChild(div);
+      // 삭제 버튼 (기본적으로 숨기기)
+      const deleteButton = document.createElement('button');
+      deleteButton.textContent = '삭제';
+      deleteButton.classList.add('hidden');
+      deleteButton.onclick = () => {
+        if (window.confirm("삭제하시겠습니까?")) {
+          deleteMaterial(key);
         }
-      }
-    }
-
-    // 자재 수정 폼에 데이터 로드
-    function loadMaterialForEdit(key, material) {
-      selectedMaterialKey = key; // 수정할 자재의 키 저장
-      document.getElementById('material-name').value = material.name;
-      document.getElementById('material-quantity').value = material.quantity;
-
-      document.getElementById('material-form').style.display = 'block'; // 자재 수정 폼 보이기
-    }
-
-    // 자재 수정/저장
-    document.getElementById('save-material').onclick = function() {
-      const name = document.getElementById('material-name').value;
-      const quantity = document.getElementById('material-quantity').value;
-
-      const materialToSave = {
-        name: name,
-        quantity: quantity
       };
 
-      const materialRef = db.ref(`teams/team${selectedTeam}/warehouses/warehouse${selectedWarehouse}/materials/${selectedMaterialKey}`);
-      materialRef.set(materialToSave); // 자재 수정 저장
-      loadMaterialData(); // 자재 목록 다시 로드
-    };
-
-    // 자재 삭제
-    function deleteMaterial(key) {
-      const materialRef = db.ref(`teams/team${selectedTeam}/warehouses/warehouse${selectedWarehouse}/materials/${key}`);
-      materialRef.remove(); // 자재 삭제
-      loadMaterialData(); // 자재 목록 다시 로드
+      div.appendChild(editButton);
+      div.appendChild(deleteButton);
+      container.appendChild(div);
     }
+  }
+}
 
-    // 자재 추가
-    document.getElementById('add-material-btn').onclick = function() {
-      document.getElementById('material-name').value = '';
-      document.getElementById('material-quantity').value = '';
-      document.getElementById('material-form').style.display = 'block'; // 자재 추가 폼 보이기
-      selectedMaterialKey = null; // 자재 추가 모드
-      document.getElementById('save-material').textContent = '저장'; // 자재 추가 버튼으로 이름 변경
-    };
+// 자재 수정 폼에 데이터 로드
+function loadMaterialForEdit(key, material) {
+  selectedMaterialKey = key; // 수정할 자재의 키 저장
+  document.getElementById('material-name').value = material.name;
+  document.getElementById('material-quantity').value = material.quantity;
 
-    // 자재 추가/저장 버튼
-    document.getElementById('save-material').onclick = function() {
-      const name = document.getElementById('material-name').value;
-      const quantity = document.getElementById('material-quantity').value;
+  document.getElementById('material-form').style.display = 'block'; // 자재 수정 폼 보이기
+}
 
-      if (!name || !quantity) {
-        alert('자재 이름과 수량을 모두 입력하세요!');
-        return;
-      }
+// 자재 수정/저장
+document.getElementById('save-material').onclick = function() {
+  const name = document.getElementById('material-name').value;
+  const quantity = document.getElementById('material-quantity').value;
 
-      const materialToSave = {
-        name: name,
-        quantity: quantity
-      };
+  const materialToSave = {
+    name: name,
+    quantity: quantity
+  };
 
-      // 자재 추가
-      if (!selectedMaterialKey) {
-        const materialRef = db.ref(`teams/team${selectedTeam}/warehouses/warehouse${selectedWarehouse}/materials`);
-        materialRef.push(materialToSave); // 자재 추가
-      } else {
-        // 자재 수정
-        const materialRef = db.ref(`teams/team${selectedTeam}/warehouses/warehouse${selectedWarehouse}/materials/${selectedMaterialKey}`);
-        materialRef.set(materialToSave); // 자재 수정
-      }
+  const materialRef = db.ref(`teams/team${selectedTeam}/warehouses/warehouse${selectedWarehouse}/materials/${selectedMaterialKey}`);
+  materialRef.set(materialToSave); // 자재 수정 저장
+  loadMaterialData(); // 자재 목록 다시 로드
+};
 
-      loadMaterialData(); // 자재 목록 다시 로드
-      document.getElementById('material-form').style.display = 'none'; // 수정 폼 숨기기
-    };
+// 자재 삭제
+function deleteMaterial(key) {
+  const materialRef = db.ref(`teams/team${selectedTeam}/warehouses/warehouse${selectedWarehouse}/materials/${key}`);
+  materialRef.remove(); // 자재 삭제
+  loadMaterialData(); // 자재 목록 다시 로드
+}
 
-    // 설정 버튼 클릭 시 자재 목록 옆의 수정/삭제 버튼 보이기/숨기기
-    document.getElementById('settings-button').onclick = function() {
-      const editButtons = document.querySelectorAll('#material-list-container .card button:nth-child(1)');
-      const deleteButtons = document.querySelectorAll('#material-list-container .card button:nth-child(2)');
+// 자재 추가
+document.getElementById('add-material-btn').onclick = function() {
+  document.getElementById('material-name').value = '';
+  document.getElementById('material-quantity').value = '';
+  document.getElementById('material-form').style.display = 'block'; // 자재 추가 폼 보이기
+  selectedMaterialKey = null; // 자재 추가 모드
+  document.getElementById('save-material').textContent = '저장'; // 자재 추가 버튼으로 이름 변경
+};
 
-      // 수정 및 삭제 버튼 보이기/숨기기
-      editButtons.forEach(button => button.classList.toggle('hidden'));
-      deleteButtons.forEach(button => button.classList.toggle('hidden'));
+// 자재 추가/저장 버튼
+document.getElementById('save-material').onclick = function() {
+  const name = document.getElementById('material-name').value;
+  const quantity = document.getElementById('material-quantity').value;
 
-      // 자재 추가 버튼 보이기/숨기기
-      const addMaterialButton = document.getElementById('add-material-btn');
-      addMaterialButton.classList.toggle('hidden');
-    };
+  if (!name || !quantity) {
+    alert('자재 이름과 수량을 모두 입력하세요!');
+    return;
+  }
+
+  const materialToSave = {
+    name: name,
+    quantity: quantity
+  };
+
+  // 자재 추가
+  if (!selectedMaterialKey) {
+    const materialRef = db.ref(`teams/team${selectedTeam}/warehouses/warehouse${selectedWarehouse}/materials`);
+    materialRef.push(materialToSave); // 자재 추가
+  } else {
+    // 자재 수정
+    const materialRef = db.ref(`teams/team${selectedTeam}/warehouses/warehouse${selectedWarehouse}/materials/${selectedMaterialKey}`);
+    materialRef.set(materialToSave); // 자재 수정
+  }
+
+  loadMaterialData(); // 자재 목록 다시 로드
+  document.getElementById('material-form').style.display = 'none'; // 수정 폼 숨기기
+};
+
+// 설정 버튼 클릭 시 자재 목록 옆의 수정/삭제 버튼 보이기/숨기기
+document.getElementById('settings-button').onclick = function() {
+  const editButtons = document.querySelectorAll('#material-list-container .card button:nth-child(1)');
+  const deleteButtons = document.querySelectorAll('#material-list-container .card button:nth-child(2)');
+
+  // 수정 및 삭제 버튼 보이기/숨기기
+  editButtons.forEach(button => button.classList.toggle('hidden'));
+  deleteButtons.forEach(button => button.classList.toggle('hidden'));
+
+  // 자재 추가 버튼 보이기/숨기기
+  const addMaterialButton = document.getElementById('add-material-btn');
+  addMaterialButton.classList.toggle('hidden');
+};
+
 
 
 
