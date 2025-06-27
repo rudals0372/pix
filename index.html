@@ -562,7 +562,31 @@ function selectWarehouse(warehouse) {
       document.getElementById('device-selection').style.display = 'block';
     }
   }
-    
+
+
+  function setEditMode(on) {
+    isEditMode = on;
+    renderMaterialList();
+
+    const toggleBtn = document.getElementById('toggleEditModeBtn');
+    toggleBtn.style.color = isEditMode ? '#4a90e2' : '#666';
+
+    // 자재추가 버튼 표시 토글
+    document.getElementById('toggleAddMaterialBtn').style.display = isEditMode ? 'inline-block' : 'none';
+
+    // 저장 버튼 표시 토글
+    const saveBtn = document.querySelector('#material-list button[onclick="saveMaterialData()"]');
+    if (saveBtn) saveBtn.style.display = isEditMode ? 'inline-block' : 'none';
+
+    // 자재 추가 폼 닫기 (편집모드 끄면 항상 닫기)
+    if (!isEditMode) {
+      document.getElementById('addMaterialForm').style.display = 'none';
+      document.getElementById('toggleAddMaterialBtn').textContent = '자재추가';
+    }
+  }
+
+
+  
  // Firebase 설정
     const firebaseConfig = {
       apiKey: "AIzaSyBFnvY4Adn35uSb0RztjBKkPkRnhuOCYn4",
