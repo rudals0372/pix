@@ -484,32 +484,34 @@
     }
   });
   
-   const defaultMaterialData = {
-    team1: {
-      warehouseA: [
-        { item: '자재1', quantity: 10 },
-        { item: '자재2', quantity: 5 },
-      ],
-      warehouseB: [
-        { item: '자재3', quantity: 20 },
-        { item: '자재4', quantity: 7 },
-      ],
-    },
-    team2: {
-      warehouseC: [
-        { item: '자재5', quantity: 15 },
-        { item: '자재6', quantity: 12 },
-      ],
-    },
-    team3: {
-      warehouseD: [
-        { item: '자재7', quantity: 8 },
-        { item: '자재8', quantity: 25 },
-      ],
-    },
-  };        
-  
-  let materialData = {};
+const defaultMaterialData = {
+  team1: {
+    warehouseA: [
+      { item: '자재1', quantity: 10 },
+      { item: '자재2', quantity: 5 },
+    ],
+    warehouseB: [
+      { item: '자재3', quantity: 20 },
+      { item: '자재4', quantity: 7 },
+    ],
+  },
+  team2: {
+    warehouseC: [
+      { item: '자재5', quantity: 15 },
+      { item: '자재6', quantity: 12 },
+    ],
+  },
+  team3: {
+    warehouseD: [
+      { item: '자재7', quantity: 8 },
+      { item: '자재8', quantity: 25 },
+    ],
+  },
+};
+
+// materialData에 기본 데이터 할당
+let materialData = defaultMaterialData;
+
   let currentTeam = null;
   let currentWarehouse = null;
 
