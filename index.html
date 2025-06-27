@@ -578,7 +578,11 @@ function selectWarehouse(warehouse) {
     // Firebase 초기화
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-
+  
+  let materialData = {};
+  let currentTeam = null;
+  let currentWarehouse = null;
+  
     // 데이터베이스에서 자재 목록 가져오기
   function loadMaterialData() {
   const materialRef = firebase.database().ref('materials');
