@@ -19,13 +19,12 @@
       color: #2c3e50;
     }
  .hidden { display: none;}
-     #team-cards, 
-  #warehouse-cards, 
-  #material-list-container {
-    display: none;
-   
-  }
-
+  #team-cards,
+#warehouse-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 2열 */
+  gap: 10px;
+}
  
     .login-screen {
       position: fixed;
