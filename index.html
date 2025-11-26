@@ -324,7 +324,7 @@ function isOldIOS() {
   const m = ua.match(/OS (\d+)_/i);
   if (!m) return false;
   const major = parseInt(m[1], 10);
-  return major > 0 && major <= 18;
+  return major > 0 && major <= 19;
 }
 
 // ▶ iOS 구버전용 - 현재 화면에서 PDF.js로 렌더링
