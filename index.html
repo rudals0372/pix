@@ -1,856 +1,240 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>마산전기사업소</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <style>
-    :root{ --gap:16px; --radius:14px; --border:#e5e7eb; --text:#111827; --bg:#ffffff; --bg-page:#fafafa; }
-    *{ box-sizing:border-box }
-    html,body{ height:100% }
-    body{ margin:0; font-family:'Pretendard', system-ui, -apple-system, Segoe UI, Roboto, Noto Sans KR, sans-serif; color:var(--text); background:var(--bg-page) }
-    .topbar{ position:sticky; top:0; inset-inline:0; z-index:10; background:var(--bg); border-bottom:1px solid var(--border) }
-    .topbar__inner{ max-width:1180px; margin:0 auto; display:flex; align-items:center; gap:8px; padding:10px 12px }
-    .topbar__title{ margin:0; font-size:16px; font-weight:700 }
-    .icon-btn{ width:38px; height:38px; display:inline-flex; align-items:center; justify-content:center; background:transparent; border:1px solid var(--border); border-radius:10px; cursor:pointer }
-    .container{ max-width:1180px; margin:0 auto; padding:16px 12px }
-    .grid{ display:grid; gap:var(--gap) }
-    .grid--cards{ grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)) }
-    .card{ border:1px solid var(--border); border-radius:var(--radius); padding:14px; cursor:pointer; background:#fff }
-    .row{ display:flex; align-items:center; gap:12px; padding:12px; border:1px solid var(--border); border-radius:var(--radius); background:#fff }
-    .row__main{ flex:1 1 auto; min-width:0 }
-    .row__title{ font-weight:700; margin:0 0 4px }
-    .row__desc{ margin:0; font-size:13px; opacity:.8 }
-    .btn{ display:inline-flex; align-items:center; gap:6px; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:#fff; cursor:pointer }
-    .u-hidden{ visibility:hidden }
-    .u-truncate{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
-    .list{ display:flex; flex-direction:column; gap:12px;}
-      
-    @media (prefers-color-scheme: dark) {
-  body {
-    background: #111;
-    color: #f5f5f5;
-  }
-  .card, .row, .inv-row {
-    background: #222;
-    border-color: #333;
-  }
-  .topbar {
-    background: #1a1a1a;
-    border-color: #333;
-  }
-  .btn, .inv-btn, .inv-input {
-    background: #333;
-    color: #eee;
-    border-color: #444;
-  }
-}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게임 정산기</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+        .step {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .hidden {
+            display: none;
+        }
+        .player-input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .player-input-group span {
+            width: 80px;
+            font-weight: bold;
+        }
+        .result-card {
+            background: #eef9f1;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border-left: 5px solid #4CAF50;
+        }
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 18px;
+            margin: 8px 0;
+        }
+        .positive { color: #2e7d32; font-weight: bold; }
+        .negative { color: #c62828; font-weight: bold; }
+        .zero { color: #555; }
+    </style>
 </head>
 <body>
-  <header class="topbar" role="banner">
-    <div class="topbar__inner">
-      <button class="icon-btn" id="js-back" aria-label="뒤로가기"><i class="material-icons">arrow_back</i></button>
-      <h1 class="topbar__title" id="js-title">홈</h1>
+
+<div class="container">
+    <h1>🎮 게임 정산기</h1>
+
+    <!-- 1단계: 설정 입력 -->
+    <div id="step-setup" class="step">
+        <h2>1. 게임 기본 설정</h2>
+        <div class="form-group">
+            <label for="playerCount">참가 인원 수 (명):</label>
+            <input type="number" id="playerCount" min="2" placeholder="예: 4" value="4">
+        </div>
+        <div class="form-group">
+            <label for="totalRounds">총 게임 판수:</label>
+            <input type="number" id="totalRounds" min="1" placeholder="예: 5" value="5">
+        </div>
+        <button onclick="setupGame()">다음 단계로</button>
     </div>
-  </header>
 
-  <main class="container" id="js-app" role="main"></main>
-
-  <!-- Firebase (자재내역 전용) -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
-  <script>
-  const APP_DATA = {
-    categories: [
-      // 1. 선로전환기
-      {
-        id:'cat1', name:'MJ 선로전환기', desc:'MJ 선로전환기 매뉴얼 등',
-        devices:[
-
-             {
-            id:'dev1', name:'작업안전수칙', desc:'선로전환기 보수 안전수칙',
-            manuals:[
-              { id:'m1', title:'선로전환기 보수 작업수칙', url:'https://raw.githubusercontent.com/rudals0372/k/main/docs/MJ/6.pdf' }
-            ]
-          },
-          {
-            id:'dev2', name:'표준화 매뉴얼', desc:'MJ81 선로전환기 매뉴얼',
-            manuals:[
-              { id:'m1', title:'1. 적용범위', url:'https://raw.githubusercontent.com/rudals0372/k/main/docs/MJ/1.pdf' },
-              { id:'m2', title:'2. 장치 및 구성품', url:'https://raw.githubusercontent.com/rudals0372/k/main/docs/MJ/2.pdf' },
-              { id:'m3', title:'3. 점검방법', url:'https://raw.githubusercontent.com/rudals0372/k/main/docs/MJ/3.pdf' },
-              { id:'m4', title:'4. 장애발생 시 조치방법', url:'https://raw.githubusercontent.com/rudals0372/k/main/docs/MJ/4.pdf' },
-              { id:'m5', title:'5. 점검부', url:'https://raw.githubusercontent.com/rudals0372/k/main/docs/MJ/5.pdf' }
-            ]
-          },
-             {
-            id:'dev3', name:'장애사례', desc:'선로전환기 장애사례',
-            manuals:[
-              { id:'m1', title:'MJ81 장애사례', url:'https://raw.githubusercontent.com/rudals0372/k/main/docs/MJ/7.pdf' }
-            ]
-          },
-
-     {
-            id:'dev4', name:'결선도', desc:'MJ81 선로전환기 결선도',
-            manuals:[
-              { id:'m1', title:'MJ81 결선도', url:'https://raw.githubusercontent.com/rudals0372/k/main/docs/MJ/8.pdf' }
-            ]
-          },        
-  {
-            id:'dev5', name:'동영상', desc:'MJ81 유지보수 동영상',
-            manuals:[
-              { id:'m1', title:'정밀점검 동영상1', url:'https://raw.githubusercontent.com/rudals0372/k/main/docs/MJ/1.mp4' },
-              { id:'m2', title:'정밀점검 동영상2', url:'https://raw.githubusercontent.com/rudals0372/k/main/docs/MJ/2.mp4' },
-              { id:'m3', title:'정밀점검 동영상3', url:'https://raw.githubusercontent.com/rudals0372/k/main/docs/MJ/3.mp4' },
-              { id:'m4', title:'정밀점검 동영상4', url:'https://raw.githubusercontent.com/rudals0372/k/main/docs/MJ/4.mp4' },
-              { id:'m5', title:'정밀점검 동영상5', url:'https://raw.githubusercontent.com/rudals0372/k/main/docs/MJ/5.mp4' },
-              { id:'m6', title:'밀착검지기 동영상', url:'https://raw.githubusercontent.com/rudals0372/k/main/밀착동영상.mp4' }
-            ]
-          }
-
-
-          
-          ]
-      }
-          ,
-        
-      // 11. 자재내역 (특수 플로우: 팀 → 창고 → 자재 목록)
-      {
-        id:'inv', name:'자재내역', desc:'팀/창고별 자재 현황 보기', devices:[]
-      }
-    ]
-  };
-
-  // ---- 라우팅: 기존 + 자재내역 전용 ----
-  const ROUTES = {
-    home:/^#$|^#\/$/,
-    category:/^#\/cat\/([^/]+)$/,
-    device:/^#\/cat\/([^/]+)\/dev\/([^/]+)$/,
-    invTeam:/^#\/cat\/inv\/team\/(\d+)$/,
-    invWh:/^#\/cat\/inv\/team\/(\d+)\/wh\/(\d+)$/
-  };
-
-  // Firebase 초기화 (자재내역용)
-  const firebaseConfig = {
-    apiKey: "AIzaSyBFnvY4Adn35uSb0RztjBKkPkRnhuOCYn4",
-    authDomain: "korail-dac64.firebaseapp.com",
-    databaseURL: "https://korail-dac64-default-rtdb.firebaseio.com",
-    projectId: "korail-dac64",
-    storageBucket: "korail-dac64.firebasestorage.app",
-    messagingSenderId: "366259094919",
-    appId: "1:366259094919:web:ab1c74c4f38a799113bf22",
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-
-  const $app = document.getElementById('js-app');
-  const $title = document.getElementById('js-title');
-  const $back = document.getElementById('js-back');
-  $back.addEventListener('click', () => history.back());
-
-  function setHash(h){ if(location.hash !== h){ location.hash = h } else { onRoute() } }
-  window.addEventListener('hashchange', onRoute);
-  if(!location.hash) location.hash = '#/';
-  onRoute();
-
-  function onRoute(){
-    const h = location.hash || '#/';
-    if(ROUTES.home.test(h)) return renderHome();
-    let m;
-    if(m = h.match(ROUTES.invWh))   { const [,team,wh] = m; return renderInvMaterials(+team, +wh); }
-    if(m = h.match(ROUTES.invTeam)) { const [,team] = m;    return renderInvWarehouses(+team); }
-    if(m = h.match(ROUTES.device))  { const [,catId,devId] = m; return renderDevice(catId, devId); }
-    if(m = h.match(ROUTES.category)){ const [,catId] = m;       return renderCategory(catId); }
-    renderHome();
-  }
-
-  function renderHome(){
-    $title.textContent = '홈';
-    $back.classList.add('u-hidden');
-    $app.innerHTML = `<section class="home"><div class="grid grid--cards" id="homeGrid"></div></section>`;
-    const $grid = document.getElementById('homeGrid');
-    APP_DATA.categories.forEach(cat => {
-      const card = document.createElement('article');
-      card.className = 'card card--category';
-      card.innerHTML = `<h3 class="card__title u-truncate">${cat.name}</h3><p class="card__desc u-truncate">${cat.desc}</p>`;
-      card.addEventListener('click', () => setHash(`#/cat/${cat.id}`));
-      $grid.appendChild(card);
-    });
-  }
-
-  function renderCategory(catId){
-    // 자재내역은 특수 화면(팀 선택)으로 진입 (표시 이름 오버라이드는 아래 추가 스크립트에서 처리)
-    if(catId === 'inv'){
-      $title.textContent = '자재내역 · 팀 선택';
-      $back.classList.remove('u-hidden');
-      $app.innerHTML = `
-        <section class="category">
-          <div class="grid grid--cards" id="teamGrid"></div>
-        </section>`;
-      const $grid = document.getElementById('teamGrid');
-      [1,2,3].forEach(team => {
-        const card = document.createElement('article');
-        card.className = 'card';
-        card.innerHTML = `<h3 class="u-truncate">팀 ${team}</h3><p class="row__desc">창고 선택으로 이동</p>`;
-        card.addEventListener('click', () => setHash(`#/cat/inv/team/${team}`));
-        $grid.appendChild(card);
-      });
-      return;
-    }
-
-    // 일반 카테고리 → 장치 목록
-    const cat = APP_DATA.categories.find(c => c.id === catId);
-    if(!cat) return setHash('#/');
-    $title.textContent = cat.name;
-    $back.classList.remove('u-hidden');
-
-    $app.innerHTML = `<section class="category"><div class="list" id="devList"></div></section>`;
-    const $list = document.getElementById('devList');
-    cat.devices.forEach(d => {
-      const row = document.createElement('div');
-      row.className = 'row row--device';
-      row.innerHTML = `<div class="row__main"><h4 class="row__title u-truncate">${d.name}</h4><p class="row__desc u-truncate">${d.desc}</p></div><button class="btn btn--open" type="button">열기</button>`;
-      row.querySelector('.btn--open').addEventListener('click', e => {
-        e.stopPropagation();
-        setHash(`#/cat/${catId}/dev/${d.id}`);
-      });
-      $list.appendChild(row);
-    });
-  }
-
-  // 자재내역: 창고 선택 (표시 이름 오버라이드는 아래 추가 스크립트에서 처리)
-  function renderInvWarehouses(team){
-    $title.textContent = `자재내역 · 팀 ${team} · 창고 선택`;
-    $back.classList.remove('u-hidden');
-    $app.innerHTML = `
-      <section class="category">
-        <div class="grid grid--cards" id="whGrid"></div>
-      </section>`;
-    const $grid = document.getElementById('whGrid');
-    [1,2,3,4].forEach(wh => {
-      const card = document.createElement('article');
-      card.className = 'card';
-      card.innerHTML = `<h3 class="u-truncate">창고 ${wh}</h3><p class="row__desc">자재 목록 보기</p>`;
-      card.addEventListener('click', () => setHash(`#/cat/inv/team/${team}/wh/${wh}`));
-      $grid.appendChild(card);
-    });
-  }
-
-  // 자재내역: 자재 목록 (초기 버전 — 아래 추가 스크립트가 검색/편집 기능으로 오버라이드)
-  function renderInvMaterials(team, wh){
-    $title.textContent = `자재내역 · 팀 ${team} · 창고 ${wh}`;
-    $back.classList.remove('u-hidden');
-    $app.innerHTML = `
-      <section class="device">
-        <div class="list" id="matList"></div>
-      </section>`;
-    const $list = document.getElementById('matList');
-
-    const ref = db.ref(`teams/team${team}/warehouses/warehouse${wh}/materials`);
-    ref.once('value', snap => {
-      const materials = snap.val();
-      $list.innerHTML = '';
-      if(!materials){
-        $list.innerHTML = `<div class="row"><div class="row__main"><h5 class="row__title">자재 없음</h5><p class="row__desc">등록된 자재가 없습니다.</p></div></div>`;
-        return;
-      }
-      Object.entries(materials).forEach(([key, m])=>{
-        const row = document.createElement('div');
-        row.className = 'row row--manual';
-        row.innerHTML = `
-          <div class="row__main">
-            <h5 class="row__title u-truncate">${m.name ?? '-'}</h5>
-            <p class="row__desc">수량: ${m.quantity ?? 0}</p>
-          </div>`;
-        $list.appendChild(row);
-      });
-    }, err=>{
-      const $list = document.getElementById('matList');
-      $list.innerHTML = `<div class="row"><div class="row__main"><h5 class="row__title">로드 오류</h5><p class="row__desc">${err?.message || '데이터를 불러오지 못했습니다.'}</p></div></div>`;
-    });
-  }
-
-function renderDevice(catId, devId){
-  const cat = APP_DATA.categories.find(c => c.id === catId);
-  const dev = cat?.devices?.find(d => d.id === devId);
-  if(!cat || !dev) return setHash('#/');
-  $title.textContent = `${cat.name} · ${dev.name}`;
-  $back.classList.remove('u-hidden');
-
-  $app.innerHTML = `<section class="device"><div class="list" id="manList"></div><div id="mediaContainer" style="margin-top:16px;"></div></section>`;
-  const $list = document.getElementById('manList');
-  const $media = document.getElementById('mediaContainer');
-
-  dev.manuals.forEach(m => {
-    const row = document.createElement('div');
-    row.className = 'row row--manual';
-    row.innerHTML = `<div class="row__main"><h5 class="row__title u-truncate">${m.title}</h5><p class="row__desc u-truncate">${m.url?.endsWith('.mp4') ? '동영상' : 'PDF'}</p></div><button class="btn btn--view" type="button">보기</button>`;
-    
-    const btn = row.querySelector('.btn--view');
-    if(m.url){
-      btn.addEventListener('click', () => {
-        if(m.url.endsWith('.mp4')){
-          // 동영상이면 기존 화면에 삽입
-          $media.innerHTML = `<video src="${m.url}" controls autoplay style="width:100%; max-height:500px;"></video>`;
-          // 선택한 동영상 제목 표시
-          $title.textContent = `${cat.name} · ${dev.name} · ${m.title}`;
-        } else {
-          // PDF는 기존 처리
-          openPDF(m.url);
-        }
-      });
-      btn.title = `${m.title} 열기`;
-    } else {
-      btn.disabled = true;
-      btn.title = '경로가 설정되지 않았습니다';
-    }
-    $list.appendChild(row);
-  });
-}
-
-
-
-  // ===============================================
-//   iOS 구버전 자동감지 + 이중 PDF 렌더링 완성본
-// ===============================================
-
-// ▶ iOS 구버전 판별 (iOS 14 이하만 true)
-function isOldIOS() {
-  const ua = navigator.userAgent;
-  const m = ua.match(/OS (\d+)_/i);
-  if (!m) return false;
-  const major = parseInt(m[1], 10);
-  return major > 0 && major <= 19;
-}
-
-// ▶ iOS 구버전용 - 현재 화면에서 PDF.js로 렌더링
-function openPDFInPage(url) {
-  // 화면 전체를 PDF 화면으로 변경
-  document.body.innerHTML = `
-    <div style="padding:10px;border-bottom:1px solid #ccc;display:flex;gap:8px;align-items:center;">
-      <button onclick="history.back()" 
-              style="padding:6px 12px;border:1px solid #ccc;border-radius:8px;background:#fff;">
-        뒤로
-      </button>
-      <strong>PDF 로딩 중…</strong>
+    <!-- 2단계: 패배 횟수 & 기준 금액 N 입력 -->
+    <div id="step-input" class="step hidden">
+        <h2>2. 기록 및 금액 설정</h2>
+        <div id="playerInputs"></div>
+        <hr style="margin: 20px 0; border: none; border-top: 1px dashed #ccc;">
+        <div class="form-group">
+            <label for="unitAmount">1회 패배 시 줄 금액 (N원):</label>
+            <input type="number" id="unitAmount" min="0" placeholder="예: 1000" value="1000">
+        </div>
+        <button onclick="calculateResults()">최종 금액 계산하기</button>
     </div>
-    <canvas id="pdfCanvas" style="width:100%;"></canvas>
-  `;
 
-  // PDF.js 로딩
-  const script = document.createElement("script");
-  script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js";
-  script.onload = () => loadPDF();
-  document.head.appendChild(script);
+    <!-- 3단계: 정산 결과 -->
+    <div id="step-result" class="step hidden">
+        <h2>3. 최종 정산 결과</h2>
+        <div id="resultContainer"></div>
+        <button onclick="resetGame()" style="background-color: #777; margin-top: 15px;">처음부터 다시하기</button>
+    </div>
+</div>
 
-  function loadPDF(){
-    pdfjsLib.GlobalWorkerOptions.workerSrc =
-      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js";
+<script>
+    let players = [];
+    let rounds = 0;
 
-    const xhr = new XMLHttpRequest();
-    xhr.open("GET", url);
-    xhr.responseType = "arraybuffer";
-    xhr.onload = () => {
-      pdfjsLib.getDocument({
-        data: xhr.response,
-        disableWorker: true   // iOS 구버전에서 worker 사용 시 깨짐 → 무조건 off
-      }).promise.then(pdf => {
-        pdf.getPage(1).then(page => {
-          const canvas = document.getElementById("pdfCanvas");
-          const ctx = canvas.getContext("2d");
-          const viewport = page.getViewport({ scale: 1.2 });
+    // 게임 세팅
+    function setupGame() {
+        const countInput = document.getElementById('playerCount').value;
+        const roundInput = document.getElementById('totalRounds').value;
 
-          canvas.width = viewport.width;
-          canvas.height = viewport.height;
+        const count = parseInt(countInput);
+        rounds = parseInt(roundInput);
 
-          page.render({ canvasContext: ctx, viewport });
-        });
-      });
-    };
-    xhr.send();
-  }
-}
-
-// ▶ 새창에서 Mozilla PDF.js로 여는 방식 (네가 원래 쓰던 방식)
-function openPDFInNewWindow(normalized) {
-  const viewerURL =
-    `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(normalized)}`;
-
-  const w = window.open(viewerURL, "_blank");
-
-  // 팝업 차단 → Google Viewer 백업
-  if (!w || w.closed) {
-    const alt =
-      `https://docs.google.com/viewer?url=${encodeURIComponent(normalized)}&embedded=true`;
-    window.open(alt, "_blank");
-  }
-}
-
-// ===============================================
-//   최종 openPDF() — 이 함수만 호출하면 자동 분기됨
-// ===============================================
-function openPDF(url){
-  // URL 정규화 (너 코드 그대로 유지)
-  const normalized = (u=>{
-    if(!u) return '';
-    try {
-      if(!/^https?:\/\//i.test(u)) return u;
-      const urlObj = new URL(u);
-      urlObj.pathname = urlObj.pathname
-        .split('/')
-        .map(seg => encodeURIComponent(decodeURIComponent(seg)))
-        .join('/');
-      return urlObj.toString();
-    } catch { return u; }
-  })(url);
-
-  if (!normalized) {
-    alert("PDF 경로가 비어 있습니다.");
-    return;
-  }
-
-  // ❗ iOS 14 이하 → 현재화면 렌더링 (Mozilla PDF.js 새창 불가)
-  if (isOldIOS()) {
-    openPDFInPage(normalized);
-    return;
-  }
-
-  // ❗ iOS 15+ / Android / PC → 기존처럼 새탭 열기
-  openPDFInNewWindow(normalized);
-}
-  </script>
-
-  <!-- ===== [추가 스크립트] 자재내역: 검색 + 추가/수정/삭제 + 리스너 해제/정렬/검증 ===== -->
-  <script>
-  (function(){
-    // 옵션
-    const ALLOW_ADD = true;
-    const ALLOW_DELETE = true;
-
-    // 최소 스타일
-    const style = document.createElement('style');
-    style.textContent = `
-      .inv-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0}
-      .inv-btn{padding:8px 12px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;cursor:pointer}
-      .inv-input{padding:8px 12px;border:1px solid #e5e7eb;border-radius:10px;min-width:220px}
-      .inv-row{display:flex;justify-content:space-between;align-items:center;border:1px solid #e5e7eb;border-radius:14px;padding:10px;background:#fff;margin-bottom:12px}
-      .inv-actions{display:flex;gap:6px}
-      .inv-modal{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;z-index:9999}
-      .inv-card{width:min(480px,92vw);background:#fff;border-radius:16px;border:1px solid #e5e7eb;padding:16px}
-      .inv-field{display:flex;flex-direction:column;gap:6px;margin:10px 0}
-      .inv-muted{color:#6b7280;font-size:13px}
-    `;
-    document.head.appendChild(style);
-
-    const $ = id => document.getElementById(id);
-    const $app = $('js-app');
-    const $title = $('js-title');
-    const $back = $('js-back');
-
-    // 기존 함수가 있어도 "덮어쓰기"해서 검색 포함 버전으로 사용
-    window.renderInvMaterials = function(team, wh){
-      if ($title) $title.textContent = `자재내역 · 팀 ${team} · 창고 ${wh}`;
-      if ($back)  $back.classList.remove('u-hidden');
-
-      $app.innerHTML = `
-        <section class="device">
-          <div class="inv-toolbar">
-            <button class="inv-btn" id="inv-settings">설정</button>
-            <button class="inv-btn" id="inv-add" style="display:none;">자재 추가</button>
-            <input class="inv-input" id="inv-search" type="search" placeholder="자재명 검색" aria-label="자재명 검색">
-            <span class="inv-muted" id="inv-count" aria-live="polite"></span>
-          </div>
-          <div class="list" id="matList"></div>
-        </section>
-      `;
-
-      const matListEl   = $('matList');
-      const btnSettings = $('inv-settings');
-      const btnAdd      = $('inv-add');
-      const inputSearch = $('inv-search');
-      const labelCount  = $('inv-count');
-
-      let settingsOn   = false; // 설정 토글
-      let currentKey   = null;  // 편집 대상 키(null이면 추가)
-      let allMaterials = {};    // 전체 목록(필터 이전)
-      let filterText   = '';    // 검색어
-
-      // 네 코드의 db 재사용
-      const refPath = `teams/team${team}/warehouses/warehouse${wh}/materials`;
-      const ref = db.ref(refPath);
-
-      // ---- 실시간 반영 + 핸들 저장
-      const valueHandler = snap => {
-        allMaterials = snap.val() || {};
-        renderList();
-      };
-      const errorHandler = err => {
-        matListEl.innerHTML = `<div class="inv-row"><div>로드 오류: ${err?.message || '알 수 없는 오류'}</div></div>`;
-      };
-      ref.on('value', valueHandler, errorHandler);
-
-      // ---- 화면 이탈 시 구독 해제 (중복 구독 방지)
-      const offOnLeave = () => ref.off('value', valueHandler);
-      window.addEventListener('hashchange', offOnLeave, { once:true });
-      window.addEventListener('beforeunload', offOnLeave, { once:true });
-
-      // 검색
-      inputSearch.addEventListener('input', ()=>{
-        filterText = (inputSearch.value || '').trim().toLowerCase();
-        renderList();
-      });
-
-      function renderList(){
-        matListEl.innerHTML = '';
-        let entries = Object.entries(allMaterials);
-
-        // 이름 오름차순 정렬(한국어)
-        entries.sort(([,a],[,b]) => (a?.name||'').localeCompare(b?.name||'', 'ko'));
-
-        // 필터링
-        const filtered = entries.filter(([k, m])=>{
-          if(!filterText) return true;
-          const name = (m && typeof m.name === 'string') ? m.name.toLowerCase() : '';
-          return name.includes(filterText);
-        });
-
-        // 건수 표시
-        labelCount.textContent = filtered.length
-          ? `표시: ${filtered.length}건 / 전체 ${entries.length}건`
-          : `검색 결과 없음 (전체 ${entries.length}건)`;
-
-        if(!filtered.length){
-          matListEl.innerHTML = `<div class="inv-row"><div>자재 없음</div></div>`;
-          return;
-        }
-
-        filtered.forEach(([key, m])=>{
-          const row = document.createElement('div');
-          row.className = 'inv-row';
-          row.innerHTML = `
-            <div><strong>${escapeHtml(m?.name ?? '-')}</strong> · 수량: ${m?.quantity ?? 0}</div>
-            <div class="inv-actions" ${settingsOn ? '' : 'style="display:none;"'}>
-              <button class="inv-btn" data-act="edit" data-key="${key}">수정</button>
-              ${ALLOW_DELETE ? `<button class="inv-btn" data-act="del" data-key="${key}">삭제</button>` : ''}
-            </div>
-          `;
-          matListEl.appendChild(row);
-        });
-      }
-
-      // 설정 토글
-      btnSettings.addEventListener('click', ()=>{
-        settingsOn = !settingsOn;
-        if (ALLOW_ADD) btnAdd.style.display = settingsOn ? '' : 'none';
-        matListEl.querySelectorAll('.inv-actions').forEach(el=>{
-          el.style.display = settingsOn ? '' : 'none';
-        });
-      });
-
-      // 자재 추가
-      btnAdd.addEventListener('click', ()=>{
-        if (!ALLOW_ADD) return;
-        currentKey = null;
-        openEditor({ name:'', quantity:0 }, '추가');
-      });
-
-      // 행의 수정/삭제 위임
-      matListEl.addEventListener('click', (e)=>{
-        const btn = e.target.closest('button[data-act]');
-        if(!btn) return;
-        const act = btn.getAttribute('data-act');
-        const key = btn.getAttribute('data-key');
-
-        if(act === 'del'){
-          if(!ALLOW_DELETE) return;
-          if(confirm('삭제하시겠습니까?')) db.ref(refPath).child(key).remove();
-          return;
-        }
-
-        if(act === 'edit'){
-          currentKey = key;
-          db.ref(refPath).child(key).once('value').then(s=>{
-            openEditor(s.val() || {name:'', quantity:0}, '수정');
-          });
-        }
-      });
-
-      // 추가/수정 모달
-      function openEditor(data, mode){
-        const wrap = document.createElement('div');
-        wrap.className = 'inv-modal';
-        wrap.innerHTML = `
-          <div class="inv-card">
-            <h3 style="margin:0 0 8px;">자재 ${mode}</h3>
-            <div class="inv-field">
-              <label>자재 이름</label>
-              <input type="text" id="inv-name" class="inv-input" value="${escapeHtml(data.name ?? '')}">
-            </div>
-            <div class="inv-field">
-              <label>수량</label>
-              <input type="number" id="inv-qty" class="inv-input" value="${Number(data.quantity ?? 0)}" min="0" step="1">
-            </div>
-            <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;">
-              <button class="inv-btn" id="inv-cancel">취소</button>
-              <button class="inv-btn" id="inv-save">저장</button>
-            </div>
-          </div>
-        `;
-        document.body.appendChild(wrap);
-
-        $('inv-cancel').onclick = ()=> document.body.removeChild(wrap);
-        $('inv-save').onclick = ()=>{
-          const name = ($('inv-name').value||'').trim();
-          const qtyRaw  = ($('inv-qty').value||'').trim();
-          let qty = Number(qtyRaw);
-          if (Number.isNaN(qty)) qty = 0;
-          if (qty < 0) qty = 0; // 음수 방지
-
-          if(!name){
-            alert('자재 이름을 입력하세요.');
+        if (!count || count < 2) {
+            alert('인원 수는 최소 2명 이상이어야 합니다.');
             return;
-          }
-
-          const payload = { name, quantity: qty };
-          const targetRef = db.ref(refPath);
-          const p = currentKey ? targetRef.child(currentKey).set(payload) : targetRef.push(payload);
-          p.then(()=>{
-            document.body.removeChild(wrap);
-          }).catch(err=>{
-            alert('저장 실패: ' + (err?.message || '알 수 없는 오류'));
-          });
-        };
-      }
-
-      function escapeHtml(s){
-        return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
-      }
-    };
-
-    // 만약 이미 자재 화면에 들어와 있었다면 즉시 재렌더(오버라이드 반영)
-    (function reenterIfNeeded(){
-      const m = (location.hash || '').match(/^#\/cat\/inv\/team\/(\d+)\/wh\/(\d+)$/);
-      if(m && typeof window.renderInvMaterials === 'function'){
-        window.renderInvMaterials(+m[1], +m[2]);
-      }
-    })();
-
-  })();
-  </script>
-
-  <!-- ===== [추가 스크립트] 자재내역 팀/창고 표시 이름 변경 ===== -->
-  <script>
-  (function(){
-    // 표시용 이름(아이디는 기존 1~3, 1~4 유지)
-    const TEAM_LABELS = [
-      { id:1, name:'신호팀' },
-      { id:2, name:'진주신호주재' },
-      { id:3, name:'진례신호주재' },
-    ];
-    const WH_LABELS = [
-      { id:1, name:'1창고' },
-      { id:2, name:'2창고' },
-      { id:3, name:'3창고' },
-      { id:4, name:'4창고' },
-    ];
-
-    // 기존 renderCategory(inv) 오버라이드: 팀 카드 표시 이름 적용
-    const _origRenderCategory = window.renderCategory;
-    window.renderCategory = function(catId){
-      if (catId !== 'inv') {
-        return typeof _origRenderCategory === 'function' ? _origRenderCategory(catId) : null;
-      }
-      const $app = document.getElementById('js-app');
-      const $title = document.getElementById('js-title');
-      const $back = document.getElementById('js-back');
-      if ($title) $title.textContent = '자재내역 · 팀 선택';
-      if ($back)  $back.classList.remove('u-hidden');
-
-      $app.innerHTML = `
-        <section class="category">
-          <div class="grid grid--cards" id="teamGrid"></div>
-        </section>`;
-      const $grid = document.getElementById('teamGrid');
-
-      TEAM_LABELS.forEach(t=>{
-        const card = document.createElement('article');
-        card.className = 'card';
-        card.innerHTML = `<h3 class="u-truncate">${t.name}</h3><p class="row__desc">창고 선택으로 이동</p>`;
-        card.addEventListener('click', () => setHash(`#/cat/inv/team/${t.id}`));
-        $grid.appendChild(card);
-      });
-    };
-
-    // 창고 선택 화면 오버라이드: 창고 표시 이름 적용
-    window.renderInvWarehouses = function(team){
-      const $app = document.getElementById('js-app');
-      const $title = document.getElementById('js-title');
-      const $back = document.getElementById('js-back');
-      const teamName = (TEAM_LABELS.find(t=>t.id==team)||{}).name || `팀 ${team}`;
-      if ($title) $title.textContent = `자재내역 · ${teamName} · 창고 선택`;
-      if ($back)  $back.classList.remove('u-hidden');
-
-      $app.innerHTML = `
-        <section class="category">
-          <div class="grid grid--cards" id="whGrid"></div>
-        </section>`;
-      const $grid = document.getElementById('whGrid');
-
-      WH_LABELS.forEach(w=>{
-        const card = document.createElement('article');
-        card.className = 'card';
-        card.innerHTML = `<h3 class="u-truncate">${w.name}</h3><p class="row__desc">자재 목록 보기</p>`;
-        card.addEventListener('click', () => setHash(`#/cat/inv/team/${team}/wh/${w.id}`));
-        $grid.appendChild(card);
-      });
-    };
-
-    // 자재 목록 화면 타이틀에도 팀/창고 이름 반영
-    const _origRenderInvMaterials = window.renderInvMaterials;
-    if (typeof _origRenderInvMaterials === 'function') {
-      window.renderInvMaterials = function(team, wh){
-        const $title = document.getElementById('js-title');
-        const teamName = (TEAM_LABELS.find(t=>t.id==team)||{}).name || `팀 ${team}`;
-        const whName   = (WH_LABELS.find(w=>w.id==wh)||{}).name || `창고 ${wh}`;
-        if ($title) $title.textContent = `자재내역 · ${teamName} · ${whName}`;
-        return _origRenderInvMaterials(team, wh);
-      };
-    }
-
-    // 이미 inv 화면이면 즉시 재렌더(이름 반영)
-    (function reenter(){
-      const h = location.hash || '';
-      if (h === '#/cat/inv') { window.renderCategory('inv'); return; }
-      let m;
-      if (m = h.match(/^#\/cat\/inv\/team\/(\d+)$/)) {
-        window.renderInvWarehouses(+m[1]); return;
-      }
-      if (m = h.match(/^#\/cat\/inv\/team\/(\d+)\/wh\/(\d+)$/) && window.renderInvMaterials) {
-        window.renderInvMaterials(+m[1], +m[2]); return;
-      }
-    })();
-  })();
-  </script>
-
-  <!-- ===== [추가 스크립트] 페이지 진입 시 자동 음성 안내 (브라우저 내장 TTS) ===== -->
-  <script>
-  (function(){
-    // 읽을 문구만 바꿔주세요.
-    const TEXT = "오늘도 안전하게 작업하세요.";
-
-    // 음성 합성 준비
-    let koVoice = null;
-    function pickKoreanVoice(){
-      const vs = window.speechSynthesis?.getVoices?.() || [];
-      koVoice = vs.find(v=>/^ko(-|_)?/i.test(v.lang))
-              || vs.find(v=>/Korean/i.test(v.name))
-              || null;
-    }
-    function waitForVoices(timeout=1500){
-      return new Promise(res=>{
-        let done=false;
-        const t=setTimeout(()=>{ if(!done){ done=true; res(); }}, timeout);
-        function ready(){
-          if (done) return;
-          pickKoreanVoice();
-          if ((window.speechSynthesis?.getVoices?.()||[]).length){
-            done=true; clearTimeout(t); res();
-          }
         }
-        if ('speechSynthesis' in window){
-          window.speechSynthesis.onvoiceschanged = ready;
+        if (!rounds || rounds < 1) {
+            alert('판수는 최소 1판 이상이어야 합니다.');
+            return;
         }
-        ready();
-      });
-    }
 
-    function stopSpeak(){ try{ window.speechSynthesis.cancel(); }catch{} }
-    function speak(text){
-      if (!('speechSynthesis' in window)) return false;
-      stopSpeak();
-      const u = new SpeechSynthesisUtterance(text);
-      if (koVoice) u.voice = koVoice;
-      u.lang   = koVoice?.lang || 'ko-KR';
-      u.rate   = 0.95;
-      u.pitch  = 1.05;
-      u.volume = 1.0;
-      window.speechSynthesis.speak(u);
-      return true;
-    }
+        const inputContainer = document.getElementById('playerInputs');
+        inputContainer.innerHTML = '';
 
-    // 사용자 제스처 필요한 브라우저(iOS 등) 대비 오버레이
-    function showOverlay(){
-      if (document.getElementById('tts-overlay')) return;
-      const s = document.createElement('style');
-      s.textContent = `
-        #tts-overlay{position:fixed;inset:0;z-index:99999;background:rgba(17,24,39,.85);color:#fff;
-          display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
-        #tts-overlay button{margin-top:14px;padding:10px 16px;border:1px solid #fff;border-radius:12px;background:transparent;color:#fff;font-size:16px}
-        #tts-overlay small{opacity:.8;display:block;margin-top:8px}
-      `;
-      document.head.appendChild(s);
-      const el = document.createElement('div');
-      el.id = 'tts-overlay';
-      el.innerHTML = `
-        <div>
-          <h3 style="margin:0 0 8px;font-size:20px;">음성 안내를 시작하려면 탭하세요</h3>
-          <p style="margin:0;">브라우저 정책으로 첫 터치 후 재생됩니다.</p>
-          <button id="tts-start">지금 듣기</button>
-          <small>※ iOS/일부 브라우저는 사용자 제스처가 필요합니다.</small>
-        </div>`;
-      document.body.appendChild(el);
-      const start = ()=>{ speak(TEXT); hideOverlay(); };
-      document.getElementById('tts-start').addEventListener('click', start, {passive:true});
-      el.addEventListener('click', e=>{ if(e.target.id==='tts-overlay') start(); }, {passive:true});
-    }
-    function hideOverlay(){ const el = document.getElementById('tts-overlay'); if(el) el.remove(); }
-
-    async function boot(){
-      await waitForVoices(1500);
-      requestAnimationFrame(()=>{
-        try{
-          const ok = speak(TEXT);
-          setTimeout(()=>{
-            const speaking = !!(window.speechSynthesis && (window.speechSynthesis.speaking || window.speechSynthesis.pending));
-            if (!speaking) showOverlay();
-          }, 150);
-        }catch{
-          showOverlay();
+        for (let i = 1; i <= count; i++) {
+            const div = document.createElement('div');
+            div.className = 'player-input-group';
+            div.innerHTML = `
+                <span>플레이어 ${i}</span>
+                <input type="number" class="loss-input" min="0" max="${rounds}" placeholder="패배 횟수" value="0"> 판 패
+            `;
+            inputContainer.appendChild(div);
         }
-      });
+
+        document.getElementById('step-setup').classList.add('hidden');
+        document.getElementById('step-input').classList.remove('hidden');
     }
 
-    if (document.readyState === 'complete' || document.readyState === 'interactive'){
-      boot();
-    } else {
-      window.addEventListener('DOMContentLoaded', boot, {once:true});
+    // 결과 계산
+    function calculateResults() {
+        const lossInputs = document.querySelectorAll('.loss-input');
+        const unitAmount = parseInt(document.getElementById('unitAmount').value);
+
+        if (isNaN(unitAmount) || unitAmount < 0) {
+            alert('올바른 금액(N)을 입력해 주세요.');
+            return;
+        }
+
+        const totalPlayers = lossInputs.length;
+        let totalLosses = 0;
+        const losses = [];
+
+        lossInputs.forEach(input => {
+            const val = parseInt(input.value) || 0;
+            losses.push(val);
+            totalLosses += val;
+        });
+
+        // 결과 계산 방식:
+        // 한 번 질 때마다 나머지 (totalPlayers - 1) 명에게 각각 N원씩 줌 -> 총 손실: 패배수 * (인원수 - 1) * N
+        // 남이 질 때마다 1번당 N원씩 받음 -> 총 획득: (전체 패배수 - 내 패배수) * N
+        // 최종 금액 = 획득 - 손실 = (전체 패배수 - 내 패배수 * 인원수) * N
+
+        const resultContainer = document.getElementById('resultContainer');
+        resultContainer.innerHTML = '';
+
+        losses.forEach((lossCount, index) => {
+            const finalAmount = (totalLosses - (lossCount * totalPlayers)) * unitAmount;
+
+            let amountClass = 'zero';
+            let amountText = '0 원';
+
+            if (finalAmount > 0) {
+                amountClass = 'positive';
+                amountText = `+${finalAmount.toLocaleString()} 원 (받을 돈)`;
+            } else if (finalAmount < 0) {
+                amountClass = 'negative';
+                amountText = `${finalAmount.toLocaleString()} 원 (낼 돈)`;
+            }
+
+            const card = document.createElement('div');
+            card.className = 'result-card';
+            card.innerHTML = `
+                <div class="result-item">
+                    <span><strong>플레이어 ${index + 1}</strong> (${lossCount}패)</span>
+                    <span class="${amountClass}">${amountText}</span>
+                </div>
+            `;
+            resultContainer.appendChild(card);
+        });
+
+        document.getElementById('step-result').classList.remove('hidden');
     }
 
-    window.addEventListener('hashchange', stopSpeak);
-  })();
-  </script>
-<!-- ✅ 자재내역 다크모드 보정 -->
-<style id="inv-dark-override">
-@media (prefers-color-scheme: dark) {
-  .inv-row,
-  .inv-card {
-    background: #222 !important;
-    border-color: #333 !important;
-  }
-  .inv-btn,
-  .inv-input {
-    background: #333 !important;
-    color: #eee !important;
-    border-color: #444 !important;
-  }
-  .inv-muted {
-    color: #c7c7c7 !important;
-  }
-}
-</style>
+    // 리셋
+    function resetGame() {
+        document.getElementById('step-result').classList.add('hidden');
+        document.getElementById('step-input').classList.add('hidden');
+        document.getElementById('step-setup').classList.remove('hidden');
+    }
+</script>
+
 </body>
 </html>
