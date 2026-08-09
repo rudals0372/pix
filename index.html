@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>매판 금액 지정 게임 정산기</title>
+    <title>게임 금액 정산기</title>
     <style>
         * {
             box-sizing: border-box;
@@ -21,7 +21,7 @@
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            max-width: 600px;
+            max-width: 550px;
             width: 100%;
         }
         h1, h2 {
@@ -40,7 +40,7 @@
             font-weight: bold;
             color: #555;
         }
-        input, select {
+        input {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
@@ -61,30 +61,33 @@
             margin-top: 10px;
         }
         button:hover { background-color: #45a049; }
-        .btn-secondary { background-color: #008CBA; }
-        .btn-secondary:hover { background-color: #007399; }
-        .btn-danger { background-color: #f44336; }
-        .btn-danger:hover { background-color: #da190b; }
+        .btn-secondary { background-color: #777; }
+        .btn-secondary:hover { background-color: #555; }
         
         .hidden { display: none; }
         
-        .history-list {
+        .player-input-card {
             background: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            padding: 10px 15px;
-            max-height: 200px;
-            overflow-y: auto;
-            margin-bottom: 15px;
-        }
-        .history-item {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 12px;
             display: flex;
+            align-items: center;
             justify-content: space-between;
-            padding: 6px 0;
-            border-bottom: 1px solid #eee;
-            font-size: 14px;
+            gap: 10px;
         }
-        .history-item:last-child { border-bottom: none; }
+        .player-name {
+            font-weight: bold;
+            color: #333;
+            min-width: 90px;
+        }
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-grow: 1;
+        }
 
         .result-card {
             background: #eef9f1;
@@ -107,7 +110,7 @@
 <body>
 
 <div class="container">
-    <h1>🎮 라운드별 내기 정산기</h1>
+    <h1>🎮 패배 금액 정산기</h1>
 
     <!-- 1단계: 인원 설정 -->
     <div id="step-setup" class="step">
@@ -116,50 +119,33 @@
             <label for="playerCount">참가 인원 수 (명):</label>
             <input type="number" id="playerCount" min="2" placeholder="예: 4" value="4">
         </div>
-        <button onclick="setupGame()">게임 시작하기</button>
+        <button onclick="setupGame()">다음 (금액 입력)</button>
     </div>
 
-    <!-- 2단계: 판별 기록 입력 -->
-    <div id="step-game" class="step hidden">
-        <h2>2. 판별 패배 기록</h2>
-        
-        <!-- 히스토리 출력 -->
-        <div>
-            <label>📜 기록된 라운드 (<span id="roundCount">0</span>판 진행됨)</label>
-            <div id="historyList" class="history-list">
-                <div style="color: #888; text-align: center;">아직 기록된 게임이 없습니다.</div>
-            </div>
-        </div>
-
-        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border: 1px solid #ffeeba;">
-            <div class="form-group">
-                <label for="loserSelect">패배한 사람:</label>
-                <select id="loserSelect"></select>
-            </div>
-            <div class="form-group">
-                <label for="roundAmount">패배 금액 N (나머지에게 각 N원씩 지불):</label>
-                <input type="number" id="roundAmount" min="0" step="100" placeholder="예: 1000">
-            </div>
-            <button class="btn-secondary" onclick="addRound()">라운드 기록 추가</button>
-        </div>
-
-        <button onclick="calculateFinalResults()" style="margin-top: 20px;">🏆 최종 정산하기</button>
+    <!-- 2단계: 개개인 패배 금액 입력 -->
+    <div id="step-input" class="step hidden">
+        <h2>2. 개개인 패배 금액(N) 입력</h2>
+        <p style="font-size: 13px; color: #666; margin-bottom: 15px; text-align: center;">
+            ※ 한 판 질 때마다 나머지 사람들에게 지불한 <b>1인당 금액(N)</b>의 총합을 입력해주세요.
+        </p>
+        <div id="playerInputsContainer"></div>
+        <button onclick="calculateResults()">정산하기</button>
+        <button class="btn-secondary" onclick="resetGame()">인원 다시 설정</button>
     </div>
 
     <!-- 3단계: 최종 정산 결과 -->
     <div id="step-result" class="step hidden">
         <h2>3. 최종 정산 결과</h2>
         <div id="resultContainer"></div>
-        <button class="btn-secondary" onclick="backToGame()" style="margin-top: 15px;">게임 계속하기</button>
-        <button class="btn-danger" onclick="resetGame()">처음부터 다시 시작</button>
+        <button onclick="backToInput()" style="margin-top: 15px;">금액 수정하기</button>
+        <button class="btn-secondary" onclick="resetGame()">처음부터 다시하기</button>
     </div>
 </div>
 
 <script>
-    let totalPlayers = 0;
-    let gameHistory = []; // { round: 1, loser: 0, amount: 1000 }
+    let playerCount = 0;
 
-    // 게임 시작 및 설정
+    // 인원 설정 후 입력 필드 생성
     function setupGame() {
         const count = parseInt(document.getElementById('playerCount').value);
 
@@ -168,111 +154,61 @@
             return;
         }
 
-        totalPlayers = count;
-        gameHistory = [];
+        playerCount = count;
+        const container = document.getElementById('playerInputsContainer');
+        container.innerHTML = '';
 
-        // 패배자 선택 드롭다운 생성
-        const loserSelect = document.getElementById('loserSelect');
-        loserSelect.innerHTML = '';
-        for (let i = 1; i <= totalPlayers; i++) {
-            const option = document.createElement('option');
-            option.value = i - 1; // 0-indexed
-            option.textContent = `플레이어 ${i}`;
-            loserSelect.appendChild(option);
-        }
-
-        updateHistoryUI();
-        document.getElementById('step-setup').classList.add('hidden');
-        document.getElementById('step-game').classList.remove('hidden');
-    }
-
-    // 라운드 추가
-    function addRound() {
-        const loser = parseInt(document.getElementById('loserSelect').value);
-        const amount = parseInt(document.getElementById('roundAmount').value);
-
-        if (isNaN(amount) || amount <= 0) {
-            alert('올바른 패배 금액(N)을 입력해 주세요.');
-            return;
-        }
-
-        gameHistory.push({
-            round: gameHistory.length + 1,
-            loser: loser,
-            amount: amount
-        });
-
-        // 입력 폼 초기화
-        document.getElementById('roundAmount').value = '';
-
-        updateHistoryUI();
-    }
-
-    // 히스토리 UI 업데이트
-    function updateHistoryUI() {
-        document.getElementById('roundCount').textContent = gameHistory.length;
-        const historyList = document.getElementById('historyList');
-
-        if (gameHistory.length === 0) {
-            historyList.innerHTML = '<div style="color: #888; text-align: center;">아직 기록된 게임이 없습니다.</div>';
-            return;
-        }
-
-        historyList.innerHTML = '';
-        gameHistory.forEach((item) => {
-            const div = document.createElement('div');
-            div.className = 'history-item';
-            div.innerHTML = `
-                <span><strong>[${item.round}판]</strong> 플레이어 ${item.loser + 1} 패배</span>
-                <span>각 ${item.amount.toLocaleString()}원씩 지급 (총 ${(item.amount * (totalPlayers - 1)).toLocaleString()}원)</span>
+        for (let i = 1; i <= playerCount; i++) {
+            const card = document.createElement('div');
+            card.className = 'player-input-card';
+            card.innerHTML = `
+                <span class="player-name">플레이어 ${i}</span>
+                <div class="input-wrapper">
+                    <input type="number" class="loss-amount-input" min="0" step="100" placeholder="패배 금액 (N)" value="0">
+                    <span>원</span>
+                </div>
             `;
-            historyList.appendChild(div);
-        });
-
-        // 스크롤 제일 아래로
-        historyList.scrollTop = historyList.scrollHeight;
-    }
-
-    // 최종 정산 계산
-    function calculateFinalResults() {
-        if (gameHistory.length === 0) {
-            alert('최소 1판 이상의 게임을 기록해 주세요.');
-            return;
+            container.appendChild(card);
         }
 
-        // 각 플레이어별 잔액 배열 (0으로 초기화)
-        const balances = new Array(totalPlayers).fill(0);
+        document.getElementById('step-setup').classList.add('hidden');
+        document.getElementById('step-input').classList.remove('hidden');
+    }
 
-        // 매 판마다 정산 적용
-        gameHistory.forEach(item => {
-            const loserIndex = item.loser;
-            const amount = item.amount;
+    // 결과 계산
+    function calculateResults() {
+        const inputs = document.querySelectorAll('.loss-amount-input');
+        const lossAmounts = [];
+        let totalLossSum = 0; // 모든 플레이어 패배 금액의 합
 
-            for (let i = 0; i < totalPlayers; i++) {
-                if (i === loserIndex) {
-                    // 패배자는 나머지 (totalPlayers - 1)명에게 각각 N원씩 지불
-                    balances[i] -= amount * (totalPlayers - 1);
-                } else {
-                    // 승자는 N원씩 수령
-                    balances[i] += amount;
-                }
-            }
+        inputs.forEach(input => {
+            const val = parseInt(input.value) || 0;
+            lossAmounts.push(val);
+            totalLossSum += val;
         });
 
-        // 결과 출력
         const resultContainer = document.getElementById('resultContainer');
         resultContainer.innerHTML = '';
 
-        balances.forEach((balance, index) => {
+        lossAmounts.forEach((myLoss, index) => {
+            // 수령 금액 = 나를 제외한 다른 사람들의 패배 금액 합
+            const receiveAmount = totalLossSum - myLoss;
+            
+            // 지불 금액 = 내가 패배해서 나머지 (playerCount - 1)명에게 각각 준 금액
+            const payAmount = myLoss * (playerCount - 1);
+
+            // 최종 잔액
+            const netBalance = receiveAmount - payAmount;
+
             let amountClass = 'zero';
             let amountText = '0 원';
 
-            if (balance > 0) {
+            if (netBalance > 0) {
                 amountClass = 'positive';
-                amountText = `+${balance.toLocaleString()} 원 (받을 돈)`;
-            } else if (balance < 0) {
+                amountText = `+${netBalance.toLocaleString()} 원 (받을 돈)`;
+            } else if (netBalance < 0) {
                 amountClass = 'negative';
-                amountText = `${balance.toLocaleString()} 원 (낼 돈)`;
+                amountText = `${netBalance.toLocaleString()} 원 (낼 돈)`;
             }
 
             const card = document.createElement('div');
@@ -286,23 +222,21 @@
             resultContainer.appendChild(card);
         });
 
-        document.getElementById('step-game').classList.add('hidden');
+        document.getElementById('step-input').classList.add('hidden');
         document.getElementById('step-result').classList.remove('hidden');
     }
 
-    // 정산 화면에서 게임으로 돌아가기
-    function backToGame() {
+    // 금액 수정으로 돌아가기
+    function backToInput() {
         document.getElementById('step-result').classList.add('hidden');
-        document.getElementById('step-game').classList.remove('hidden');
+        document.getElementById('step-input').classList.remove('hidden');
     }
 
     // 완전히 다시 시작
     function resetGame() {
-        if (confirm('모든 기록이 삭제됩니다. 다시 시작하시겠습니까?')) {
-            document.getElementById('step-result').classList.add('hidden');
-            document.getElementById('step-game').classList.add('hidden');
-            document.getElementById('step-setup').classList.remove('hidden');
-        }
+        document.getElementById('step-result').classList.add('hidden');
+        document.getElementById('step-input').classList.add('hidden');
+        document.getElementById('step-setup').classList.remove('hidden');
     }
 </script>
 
