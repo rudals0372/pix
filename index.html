@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>오실로스코프 정밀 주파수 측정기</title>
+    <title>다중 주파수 진단 및 오실로스코프</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -34,51 +34,80 @@
         }
         button:hover { background: #0056b3; }
         button:disabled { background: #444444; cursor: not-allowed; }
+        
         .freq-card {
             background: #2a2a2a;
             padding: 15px;
             border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #333;
+        }
+        .freq-display { font-size: 42px; font-weight: bold; color: #00ffcc; font-family: monospace; }
+        
+        /* 다중 주파수 분석 감시판 */
+        .multi-freq-box {
+            display: flex;
+            justify-content: space-around;
+            background: #181818;
+            padding: 10px;
+            border-radius: 8px;
             margin-bottom: 20px;
             border: 1px solid #333;
         }
-        .freq-title { font-size: 14px; color: #aaa; margin-bottom: 5px; }
-        .freq-display { font-size: 42px; font-weight: bold; color: #00ffcc; font-family: monospace; }
+        .multi-freq-item { font-size: 14px; font-family: monospace; }
+        .multi-freq-item span { font-weight: bold; color: #ffcc00; }
+
         canvas {
             width: 100%;
-            height: 280px;
+            height: 220px;
             background: #0d0d0d;
             border-radius: 8px;
             border: 1px solid #333;
             display: block;
+            margin-bottom: 15px;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h2>실시간 정밀 주파수 분석기</h2>
+        <h2>실시간 주파수 튐 진단기</h2>
         <button id="startBtn">측정 시작</button>
         
         <div class="freq-card">
-            <div class="freq-title">측정된 주파수</div>
+            <div style="font-size: 14px; color: #aaa; margin-bottom: 5px;">대표 측정 주파수 (주 신호)</div>
             <div class="freq-display"><span id="freqVal">0.0</span> Hz</div>
         </div>
 
-        <div>
-            <canvas id="visualizer"></canvas>
+        <!-- 감지된 주요 3개 주파수 표시 -->
+        <div class="multi-freq-box">
+            <div class="multi-freq-item">1순위(최대): <span id="top1">0</span> Hz</div>
+            <div class="multi-freq-item">2순위: <span id="top2">0</span> Hz</div>
+            <div class="multi-freq-item">3순위: <span id="top3">0</span> Hz</div>
         </div>
+
+        <div style="text-align: left; font-size: 12px; color: #aaa; margin: 5px 0;">1. 파형 (Time Domain)</div>
+        <canvas id="timeCanvas"></canvas>
+
+        <div style="text-align: left; font-size: 12px; color: #aaa; margin: 5px 0;">2. 주파수 스펙트럼 (Frequency Domain - 0~5kHz)</div>
+        <canvas id="freqCanvas"></canvas>
     </div>
 
     <script>
         let audioCtx;
         let analyser;
-        let microphone;
-        let canvas = document.getElementById("visualizer");
-        let canvasCtx = canvas.getContext("2d");
+        
+        const timeCanvas = document.getElementById("timeCanvas");
+        const timeCtx = timeCanvas.getContext("2d");
+        
+        const freqCanvas = document.getElementById("freqCanvas");
+        const freqCtx = freqCanvas.getContext("2d");
 
         function updateCanvasSize() {
-            canvas.width = canvas.clientWidth;
-            canvas.height = canvas.clientHeight;
+            timeCanvas.width = timeCanvas.clientWidth;
+            timeCanvas.height = timeCanvas.clientHeight;
+            freqCanvas.width = freqCanvas.clientWidth;
+            freqCanvas.height = freqCanvas.clientHeight;
         }
 
         document.getElementById("startBtn").addEventListener("click", async () => {
@@ -92,15 +121,12 @@
                 });
                 
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                
-                if (audioCtx.state === 'suspended') {
-                    await audioCtx.resume();
-                }
+                if (audioCtx.state === 'suspended') await audioCtx.resume();
 
                 analyser = audioCtx.createAnalyser();
-                analyser.fftSize = 2048; 
+                analyser.fftSize = 2048;
 
-                microphone = audioCtx.createMediaStreamSource(stream);
+                const microphone = audioCtx.createMediaStreamSource(stream);
                 microphone.connect(analyser);
 
                 document.getElementById("startBtn").innerText = "측정 중...";
@@ -113,6 +139,7 @@
             }
         });
 
+        // 자가상관 주파수 계산
         function autoCorrelate(buf, sampleRate) {
             let SIZE = buf.length;
             let rms = 0;
@@ -162,79 +189,29 @@
             return sampleRate / T0;
         }
 
-        function getZeroCrossingOffset(data) {
-            for (let i = 0; i < data.length - 1; i++) {
-                if (data[i] < 128 && data[i + 1] >= 128) {
-                    return i;
+        // 주파수 상위 3개 피크 감지
+        function getTopFrequencies(freqArray, sampleRate) {
+            let peaks = [];
+            const binSize = sampleRate / analyser.fftSize;
+
+            for (let i = 2; i < freqArray.length - 2; i++) {
+                if (freqArray[i] > 50 && freqArray[i] > freqArray[i - 1] && freqArray[i] > freqArray[i + 1]) {
+                    peaks.push({
+                        hz: Math.round(i * binSize),
+                        val: freqArray[i]
+                    });
                 }
             }
-            return 0;
-        }
-
-        function drawGridAndAxes(sampleRate, visibleSamples) {
-            const paddingLeft = 45;
-            const paddingBottom = 25;
-            const width = canvas.width - paddingLeft;
-            const height = canvas.height - paddingBottom;
-
-            // 배경 클리어
-            canvasCtx.fillStyle = '#0d0d0d';
-            canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // 그리드 선 및 라벨 설정
-            canvasCtx.strokeStyle = '#22332b';
-            canvasCtx.fillStyle = '#888888';
-            canvasCtx.font = '10px monospace';
-            canvasCtx.lineWidth = 1;
-
-            // 1. 세로축 눈금 (진폭: +1.0, 0.0, -1.0)
-            const ySteps = [
-                { text: '+1.0', y: 15 },
-                { text: ' 0.0', y: height / 2 },
-                { text: '-1.0', y: height - 5 }
-            ];
-            
-            ySteps.forEach(step => {
-                canvasCtx.beginPath();
-                canvasCtx.moveTo(paddingLeft, step.y);
-                canvasCtx.lineTo(canvas.width, step.y);
-                canvasCtx.stroke();
-                canvasCtx.fillText(step.text, 5, step.y + 3);
-            });
-
-            // 2. 가로축 눈금 (시간: ms 단위)
-            const totalDurationMs = (visibleSamples / sampleRate) * 1000;
-            const xDivisions = 4;
-
-            for (let i = 0; i <= xDivisions; i++) {
-                const xPos = paddingLeft + (width / xDivisions) * i;
-                const timeMs = ((totalDurationMs / xDivisions) * i).toFixed(1);
-
-                canvasCtx.beginPath();
-                canvasCtx.moveTo(xPos, 0);
-                canvasCtx.lineTo(xPos, height);
-                canvasCtx.stroke();
-
-                canvasCtx.fillText(`${timeMs}ms`, xPos - 12, canvas.height - 8);
-            }
-
-            // 축 메인 구분선 (X/Y 기준선)
-            canvasCtx.strokeStyle = '#444';
-            canvasCtx.beginPath();
-            canvasCtx.moveTo(paddingLeft, 0);
-            canvasCtx.lineTo(paddingLeft, height);
-            canvasCtx.lineTo(canvas.width, height);
-            canvasCtx.stroke();
-
-            return { paddingLeft, height, width };
+            peaks.sort((a, b) => b.val - a.val);
+            return peaks.slice(0, 3);
         }
 
         function draw() {
             requestAnimationFrame(draw);
 
+            // 1. 대표 Hz 수치 갱신
             let timeData = new Float32Array(analyser.fftSize);
             analyser.getFloatTimeDomainData(timeData);
-            
             let preciseHz = autoCorrelate(timeData, audioCtx.sampleRate);
             
             if (preciseHz >= 20 && preciseHz <= 15000 && isFinite(preciseHz)) {
@@ -243,38 +220,49 @@
                 document.getElementById("freqVal").innerText = "0.0";
             }
 
+            // 2. 상위 3개 분산 주파수 모니터링
+            let freqByteData = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteFrequencyData(freqByteData);
+            
+            let topPeaks = getTopFrequencies(freqByteData, audioCtx.sampleRate);
+            document.getElementById("top1").innerText = topPeaks[0] ? topPeaks[0].hz : 0;
+            document.getElementById("top2").innerText = topPeaks[1] ? topPeaks[1].hz : 0;
+            document.getElementById("top3").innerText = topPeaks[2] ? topPeaks[2].hz : 0;
+
+            // 3. 파형 그래프 그리기
             let byteTimeData = new Uint8Array(analyser.fftSize);
             analyser.getByteTimeDomainData(byteTimeData);
 
-            const visibleSamples = 512;
-            const { paddingLeft, height, width } = drawGridAndAxes(audioCtx.sampleRate, visibleSamples);
+            timeCtx.fillStyle = '#0d0d0d';
+            timeCtx.fillRect(0, 0, timeCanvas.width, timeCanvas.height);
+            timeCtx.lineWidth = 2;
+            timeCtx.strokeStyle = '#00ffcc';
+            timeCtx.beginPath();
 
-            // 실시간 파형 그리기
-            canvasCtx.lineWidth = 2;
-            canvasCtx.strokeStyle = '#00ffcc';
-            canvasCtx.beginPath();
-
-            const offset = getZeroCrossingOffset(byteTimeData);
-            const sliceWidth = width / visibleSamples;
-            let x = paddingLeft;
-
-            for (let i = 0; i < visibleSamples; i++) {
-                const idx = offset + i;
-                if (idx >= byteTimeData.length) break;
-
-                const v = byteTimeData[idx] / 128.0; 
-                const y = (v * height) / 2;
-
-                if (i === 0) {
-                    canvasCtx.moveTo(x, y);
-                } else {
-                    canvasCtx.lineTo(x, y);
-                }
-
+            const sliceWidth = timeCanvas.width / 512;
+            let x = 0;
+            for (let i = 0; i < 512; i++) {
+                const v = byteTimeData[i] / 128.0;
+                const y = (v * timeCanvas.height) / 2;
+                if (i === 0) timeCtx.moveTo(x, y);
+                else timeCtx.lineTo(x, y);
                 x += sliceWidth;
             }
+            timeCtx.stroke();
 
-            canvasCtx.stroke();
+            // 4. 주파수 스펙트럼(막대 그래프) 그리기
+            freqCtx.fillStyle = '#0d0d0d';
+            freqCtx.fillRect(0, 0, freqCanvas.width, freqCanvas.height);
+
+            const barWidth = (freqCanvas.width / (analyser.frequencyBinCount / 4));
+            let posX = 0;
+
+            for (let i = 0; i < analyser.frequencyBinCount / 4; i++) {
+                const barHeight = (freqByteData[i] / 255) * freqCanvas.height;
+                freqCtx.fillStyle = '#ffcc00';
+                freqCtx.fillRect(posX, freqCanvas.height - barHeight, barWidth - 1, barHeight);
+                posX += barWidth;
+            }
         }
 
         window.addEventListener('resize', updateCanvasSize);
