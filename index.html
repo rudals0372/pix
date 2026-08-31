@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>정밀 주파수 측정기</title>
+    <title>정밀 주파수 측정기 (선 그래프)</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -77,7 +77,6 @@
 
         document.getElementById("startBtn").addEventListener("click", async () => {
             try {
-                // 하드웨어 필터링(에코/노이즈 제거 등)을 모두 꺼서 회로의 원본 신호를 수집
                 const stream = await navigator.mediaDevices.getUserMedia({ 
                     audio: { 
                         echoCancellation: false, 
@@ -88,8 +87,6 @@
                 
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 analyser = audioCtx.createAnalyser();
-                
-                // 샘플 수율 확보를 위해 FFT Size 확장
                 analyser.fftSize = 2048; 
 
                 microphone = audioCtx.createMediaStreamSource(stream);
@@ -104,18 +101,17 @@
             }
         });
 
-        // Autocorrelation(자기상관) + 포물선 보간법 알고리즘
+        // Autocorrelation 알고리즘 (소수점 Hz 계산)
         function autoCorrelate(buf, sampleRate) {
             let SIZE = buf.length;
             let rms = 0;
 
-            // RMS(신호 전력) 계산으로 노이즈 차단
             for (let i = 0; i < SIZE; i++) {
                 let val = buf[i];
                 rms += val * val;
             }
             rms = Math.sqrt(rms / SIZE);
-            if (rms < 0.01) return -1; // 입력 신호가 너무 작으면 측정하지 않음
+            if (rms < 0.01) return -1;
 
             let r1 = 0, r2 = SIZE - 1, thres = 0.2;
             for (let i = 0; i < SIZE / 2; i++) {
@@ -147,7 +143,6 @@
             }
             let T0 = maxpos;
 
-            // 포물선 보간법으로 소수점 정밀도 보정
             let x1 = c[T0 - 1], x2 = c[T0], x3 = c[T0 + 1];
             let a = (x1 + x3 - 2 * x2) / 2;
             let b = (x3 - x1) / 2;
@@ -159,7 +154,7 @@
         function draw() {
             requestAnimationFrame(draw);
 
-            // 1. 시간 영역 데이터 추출 및 소수점 Hz 계산
+            // 1. Hz 계산 데이터 수집
             let timeData = new Float32Array(analyser.fftSize);
             analyser.getFloatTimeDomainData(timeData);
             
@@ -171,25 +166,36 @@
                 document.getElementById("freqVal").innerText = "0.0";
             }
 
-            // 2. 주파수 스펙트럼 실시간 그래프 그리기
-            let byteData = new Uint8Array(analyser.frequencyBinCount);
-            analyser.getByteFrequencyData(byteData);
+            // 2. 실시간 선(Line) 그래프 그리기
+            let byteTimeData = new Uint8Array(analyser.fftSize);
+            analyser.getByteTimeDomainData(byteTimeData);
 
             canvasCtx.fillStyle = '#0d0d0d';
             canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
 
-            const barWidth = (canvas.width / byteData.length) * 2.5;
+            // 선 스타일 설정
+            canvasCtx.lineWidth = 2;
+            canvasCtx.strokeStyle = '#00ffcc';
+            canvasCtx.beginPath();
+
+            const sliceWidth = canvas.width * 1.0 / analyser.fftSize;
             let x = 0;
 
-            for (let i = 0; i < byteData.length; i++) {
-                const barHeight = byteData[i];
-                
-                // 주파수 영역별 무지개 색상 표현
-                canvasCtx.fillStyle = `hsl(${(i / byteData.length) * 300}, 100%, 50%)`;
-                canvasCtx.fillRect(x, canvas.height - (barHeight / 255 * canvas.height), barWidth, canvas.height);
+            for (let i = 0; i < analyser.fftSize; i++) {
+                const v = byteTimeData[i] / 128.0; // 0~255 값을 0~2 범위로 정규화
+                const y = v * (canvas.height / 2);
 
-                x += barWidth + 1;
+                if (i === 0) {
+                    canvasCtx.moveTo(x, y);
+                } else {
+                    canvasCtx.lineTo(x, y);
+                }
+
+                x += sliceWidth;
             }
+
+            canvasCtx.lineTo(canvas.width, canvas.height / 2);
+            canvasCtx.stroke(); // 선 긋기
         }
     </script>
 </body>
