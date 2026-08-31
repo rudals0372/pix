@@ -3,26 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>마이크 주파수 측정기</title>
+    <title>정밀 주파수 측정기</title>
     <style>
         body { font-family: sans-serif; text-align: center; padding: 20px; background: #121212; color: #fff; }
-        button { padding: 12px 24px; font-size: 16px; cursor: pointer; border: none; border-radius: 5px; background: #007bff; color: white; margin-bottom: 20px; }
+        button { padding: 12px 24px; font-size: 16px; cursor: pointer; border: none; border-radius: 5px; background: #007bff; color: white; margin-bottom: 15px; }
         button:hover { background: #0056b3; }
-        canvas { width: 100%; max-width: 600px; height: 200px; background: #222; border-radius: 8px; }
-        .info { margin-top: 15px; font-size: 18px; color: #00ffcc; }
+        .freq-display { font-size: 36px; font-weight: bold; color: #00ffcc; margin: 15px 0; }
+        canvas { width: 100%; max-width: 600px; height: 220px; background: #1a1a1a; border-radius: 8px; border: 1px solid #333; }
     </style>
 </head>
 <body>
 
-    <h2>실시간 마이크 주파수 측정</h2>
-    <button id="startBtn">마이크 시작</button>
+    <h2>실시간 주파수(Hz) 및 스펙트럼 분석기</h2>
+    <button id="startBtn">측정 시작</button>
     
+    <div class="freq-display">
+        주파수: <span id="freqVal">0</span> Hz
+    </div>
+
     <div>
         <canvas id="visualizer"></canvas>
-    </div>
-    
-    <div class="info">
-        현재 최대 볼륨 레벨: <span id="volume">0</span>
     </div>
 
     <script>
@@ -34,19 +34,21 @@
         let canvasCtx = canvas.getContext("2d");
 
         document.getElementById("startBtn").addEventListener("click", async () => {
-            // 마이크 권한 요청 및 AudioContext 생성 (인터넷 미연결 상태에서도 작동)
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } 
+                });
                 
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 analyser = audioCtx.createAnalyser();
-                analyser.fftSize = 256; // 주파수 분석 해상도 설정
+                
+                // 해상도를 높여 정확한 Hz 계산 (2048~4096 추천)
+                analyser.fftSize = 2048; 
 
                 microphone = audioCtx.createMediaStreamSource(stream);
                 microphone.connect(analyser);
 
-                const bufferLength = analyser.frequencyBinCount;
-                dataArray = new Uint8Array(bufferLength);
+                dataArray = new Float32Array(analyser.frequencyBinCount);
 
                 document.getElementById("startBtn").innerText = "측정 중...";
                 document.getElementById("startBtn").disabled = true;
@@ -57,34 +59,57 @@
             }
         });
 
-        // 캔버스에 시각화 그래프 그리기 (반복 실행)
+        // 가장 강한 주파수(Hz) 계산 함수
+        function getDominantFrequency() {
+            analyser.getFloatFrequencyData(dataArray);
+            
+            let maxDb = -Infinity;
+            let maxIndex = -1;
+
+            for (let i = 0; i < dataArray.length; i++) {
+                if (dataArray[i] > maxDb) {
+                    maxDb = dataArray[i];
+                    maxIndex = i;
+                }
+            }
+
+            // 노이즈 차단 (소리가 너무 작으면 0Hz 표기)
+            if (maxDb < -70) return 0;
+
+            // Index를 실제 Hz 수치로 변환 (샘플링 레이트 기준)
+            const nyquist = audioCtx.sampleRate / 2;
+            const frequency = maxIndex * (nyquist / dataArray.length);
+            
+            return Math.round(frequency);
+        }
+
+        // 그래프 및 Hz 업데이트
         function draw() {
             requestAnimationFrame(draw);
 
-            analyser.getByteFrequencyData(dataArray);
+            // 1. 주파수 수치 업데이트
+            const dominantHz = getDominantFrequency();
+            document.getElementById("freqVal").innerText = dominantHz;
 
-            // 배경 그리기
-            canvasCtx.fillStyle = '#222';
+            // 2. 스펙트럼 그래프 그리기
+            const byteData = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteFrequencyData(byteData);
+
+            canvasCtx.fillStyle = '#1a1a1a';
             canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
 
-            const barWidth = (canvas.width / dataArray.length) * 2.5;
-            let barHeight;
+            const barWidth = (canvas.width / byteData.length) * 2.5;
             let x = 0;
-            let maxVol = 0;
 
-            for (let i = 0; i < dataArray.length; i++) {
-                barHeight = dataArray[i];
-                if (barHeight > maxVol) maxVol = barHeight;
+            for (let i = 0; i < byteData.length; i++) {
+                const barHeight = byteData[i];
 
-                // 주파수 그래프 막대 스타일
-                canvasCtx.fillStyle = `rgb(${barHeight + 100}, 50, 250)`;
-                canvasCtx.fillRect(x, canvas.height - barHeight / 2, barWidth, barHeight / 2);
+                // 주파수 그래프 색상 지정
+                canvasCtx.fillStyle = `hsl(${(i / byteData.length) * 280}, 100%, 50%)`;
+                canvasCtx.fillRect(x, canvas.height - (barHeight / 255 * canvas.height), barWidth, canvas.height);
 
                 x += barWidth + 1;
             }
-
-            // 실시간 수치 업데이트
-            document.getElementById("volume").innerText = maxVol;
         }
     </script>
 </body>
