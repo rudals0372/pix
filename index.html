@@ -3,242 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>게임 금액 정산기</title>
+    <title>마이크 주파수 측정기</title>
     <style>
-        * {
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        body {
-            background-color: #f4f6f8;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            max-width: 550px;
-            width: 100%;
-        }
-        h1, h2 {
-            text-align: center;
-            color: #333;
-        }
-        .step {
-            margin-bottom: 25px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #555;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 16px;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-            margin-top: 10px;
-        }
-        button:hover { background-color: #45a049; }
-        .btn-secondary { background-color: #777; }
-        .btn-secondary:hover { background-color: #555; }
-        
-        .hidden { display: none; }
-        
-        .player-input-card {
-            background: #f9f9f9;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 12px 15px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-        }
-        .player-name {
-            font-weight: bold;
-            color: #333;
-            min-width: 90px;
-        }
-        .input-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            flex-grow: 1;
-        }
-
-        .result-card {
-            background: #eef9f1;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 10px;
-            border-left: 5px solid #4CAF50;
-        }
-        .result-item {
-            display: flex;
-            justify-content: space-between;
-            font-size: 18px;
-            margin: 8px 0;
-        }
-        .positive { color: #2e7d32; font-weight: bold; }
-        .negative { color: #c62828; font-weight: bold; }
-        .zero { color: #555; }
+        body { font-family: sans-serif; text-align: center; padding: 20px; background: #121212; color: #fff; }
+        button { padding: 12px 24px; font-size: 16px; cursor: pointer; border: none; border-radius: 5px; background: #007bff; color: white; margin-bottom: 20px; }
+        button:hover { background: #0056b3; }
+        canvas { width: 100%; max-width: 600px; height: 200px; background: #222; border-radius: 8px; }
+        .info { margin-top: 15px; font-size: 18px; color: #00ffcc; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>🎮 패배 금액 정산기</h1>
-
-    <!-- 1단계: 인원 설정 -->
-    <div id="step-setup" class="step">
-        <h2>1. 인원 설정</h2>
-        <div class="form-group">
-            <label for="playerCount">참가 인원 수 (명):</label>
-            <input type="number" id="playerCount" min="2" placeholder="예: 4" value="4">
-        </div>
-        <button onclick="setupGame()">다음 (금액 입력)</button>
+    <h2>실시간 마이크 주파수 측정</h2>
+    <button id="startBtn">마이크 시작</button>
+    
+    <div>
+        <canvas id="visualizer"></canvas>
+    </div>
+    
+    <div class="info">
+        현재 최대 볼륨 레벨: <span id="volume">0</span>
     </div>
 
-    <!-- 2단계: 개개인 패배 금액 입력 -->
-    <div id="step-input" class="step hidden">
-        <h2>2. 개개인 패배 금액(N) 입력</h2>
-        <p style="font-size: 13px; color: #666; margin-bottom: 15px; text-align: center;">
-            ※ 한 판 질 때마다 나머지 사람들에게 지불한 <b>1인당 금액(N)</b>의 총합을 입력해주세요.
-        </p>
-        <div id="playerInputsContainer"></div>
-        <button onclick="calculateResults()">정산하기</button>
-        <button class="btn-secondary" onclick="resetGame()">인원 다시 설정</button>
-    </div>
+    <script>
+        let audioCtx;
+        let analyser;
+        let microphone;
+        let dataArray;
+        let canvas = document.getElementById("visualizer");
+        let canvasCtx = canvas.getContext("2d");
 
-    <!-- 3단계: 최종 정산 결과 -->
-    <div id="step-result" class="step hidden">
-        <h2>3. 최종 정산 결과</h2>
-        <div id="resultContainer"></div>
-        <button onclick="backToInput()" style="margin-top: 15px;">금액 수정하기</button>
-        <button class="btn-secondary" onclick="resetGame()">처음부터 다시하기</button>
-    </div>
-</div>
+        document.getElementById("startBtn").addEventListener("click", async () => {
+            // 마이크 권한 요청 및 AudioContext 생성 (인터넷 미연결 상태에서도 작동)
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 256; // 주파수 분석 해상도 설정
 
-<script>
-    let playerCount = 0;
+                microphone = audioCtx.createMediaStreamSource(stream);
+                microphone.connect(analyser);
 
-    // 인원 설정 후 입력 필드 생성
-    function setupGame() {
-        const count = parseInt(document.getElementById('playerCount').value);
+                const bufferLength = analyser.frequencyBinCount;
+                dataArray = new Uint8Array(bufferLength);
 
-        if (!count || count < 2) {
-            alert('인원 수는 최소 2명 이상이어야 합니다.');
-            return;
-        }
+                document.getElementById("startBtn").innerText = "측정 중...";
+                document.getElementById("startBtn").disabled = true;
 
-        playerCount = count;
-        const container = document.getElementById('playerInputsContainer');
-        container.innerHTML = '';
-
-        for (let i = 1; i <= playerCount; i++) {
-            const card = document.createElement('div');
-            card.className = 'player-input-card';
-            card.innerHTML = `
-                <span class="player-name">플레이어 ${i}</span>
-                <div class="input-wrapper">
-                    <input type="number" class="loss-amount-input" min="0" step="100" placeholder="패배 금액 (N)" value="0">
-                    <span>원</span>
-                </div>
-            `;
-            container.appendChild(card);
-        }
-
-        document.getElementById('step-setup').classList.add('hidden');
-        document.getElementById('step-input').classList.remove('hidden');
-    }
-
-    // 결과 계산
-    function calculateResults() {
-        const inputs = document.querySelectorAll('.loss-amount-input');
-        const lossAmounts = [];
-        let totalLossSum = 0; // 모든 플레이어 패배 금액의 합
-
-        inputs.forEach(input => {
-            const val = parseInt(input.value) || 0;
-            lossAmounts.push(val);
-            totalLossSum += val;
+                draw();
+            } catch (err) {
+                alert("마이크 접근에 실패했습니다: " + err);
+            }
         });
 
-        const resultContainer = document.getElementById('resultContainer');
-        resultContainer.innerHTML = '';
+        // 캔버스에 시각화 그래프 그리기 (반복 실행)
+        function draw() {
+            requestAnimationFrame(draw);
 
-        lossAmounts.forEach((myLoss, index) => {
-            // 수령 금액 = 나를 제외한 다른 사람들의 패배 금액 합
-            const receiveAmount = totalLossSum - myLoss;
-            
-            // 지불 금액 = 내가 패배해서 나머지 (playerCount - 1)명에게 각각 준 금액
-            const payAmount = myLoss * (playerCount - 1);
+            analyser.getByteFrequencyData(dataArray);
 
-            // 최종 잔액
-            const netBalance = receiveAmount - payAmount;
+            // 배경 그리기
+            canvasCtx.fillStyle = '#222';
+            canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
 
-            let amountClass = 'zero';
-            let amountText = '0 원';
+            const barWidth = (canvas.width / dataArray.length) * 2.5;
+            let barHeight;
+            let x = 0;
+            let maxVol = 0;
 
-            if (netBalance > 0) {
-                amountClass = 'positive';
-                amountText = `+${netBalance.toLocaleString()} 원 (받을 돈)`;
-            } else if (netBalance < 0) {
-                amountClass = 'negative';
-                amountText = `${netBalance.toLocaleString()} 원 (낼 돈)`;
+            for (let i = 0; i < dataArray.length; i++) {
+                barHeight = dataArray[i];
+                if (barHeight > maxVol) maxVol = barHeight;
+
+                // 주파수 그래프 막대 스타일
+                canvasCtx.fillStyle = `rgb(${barHeight + 100}, 50, 250)`;
+                canvasCtx.fillRect(x, canvas.height - barHeight / 2, barWidth, barHeight / 2);
+
+                x += barWidth + 1;
             }
 
-            const card = document.createElement('div');
-            card.className = 'result-card';
-            card.innerHTML = `
-                <div class="result-item">
-                    <span><strong>플레이어 ${index + 1}</strong></span>
-                    <span class="${amountClass}">${amountText}</span>
-                </div>
-            `;
-            resultContainer.appendChild(card);
-        });
-
-        document.getElementById('step-input').classList.add('hidden');
-        document.getElementById('step-result').classList.remove('hidden');
-    }
-
-    // 금액 수정으로 돌아가기
-    function backToInput() {
-        document.getElementById('step-result').classList.add('hidden');
-        document.getElementById('step-input').classList.remove('hidden');
-    }
-
-    // 완전히 다시 시작
-    function resetGame() {
-        document.getElementById('step-result').classList.add('hidden');
-        document.getElementById('step-input').classList.add('hidden');
-        document.getElementById('step-setup').classList.remove('hidden');
-    }
-</script>
-
+            // 실시간 수치 업데이트
+            document.getElementById("volume").innerText = maxVol;
+        }
+    </script>
 </body>
 </html>
