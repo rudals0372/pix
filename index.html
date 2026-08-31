@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>정밀 주파수 측정기 (복구 및 범위 보정)</title>
+    <title>정밀 주파수 측정기 (오실로스코프 파형 적용)</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -42,7 +42,7 @@
             border: 1px solid #333;
         }
         .freq-title { font-size: 14px; color: #aaa; margin-bottom: 5px; }
-        .freq-display { font-size: 42px; font-weight: bold; color: #00ffcc; }
+        .freq-display { font-size: 42px; font-weight: bold; color: #00ffcc; font-family: monospace; }
         canvas {
             width: 100%;
             height: 220px;
@@ -75,6 +75,12 @@
         let canvas = document.getElementById("visualizer");
         let canvasCtx = canvas.getContext("2d");
 
+        // 캔버스 실제 픽셀 크기 동적 할당 (파형이 찌그러지는 현상 방지)
+        function updateCanvasSize() {
+            canvas.width = canvas.clientWidth;
+            canvas.height = canvas.clientHeight;
+        }
+
         document.getElementById("startBtn").addEventListener("click", async () => {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ 
@@ -86,8 +92,14 @@
                 });
                 
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // AudioContext 활성화 보장
+                if (audioCtx.state === 'suspended') {
+                    await audioCtx.resume();
+                }
+
                 analyser = audioCtx.createAnalyser();
-                analyser.fftSize = 2048; // 원래 작동하던 2048 크기로 원복
+                analyser.fftSize = 2048; 
 
                 microphone = audioCtx.createMediaStreamSource(stream);
                 microphone.connect(analyser);
@@ -95,13 +107,14 @@
                 document.getElementById("startBtn").innerText = "측정 중...";
                 document.getElementById("startBtn").disabled = true;
 
+                updateCanvasSize();
                 draw();
             } catch (err) {
                 alert("마이크 접근 실패: " + err);
             }
         });
 
-        // 원본 자가상관(Autocorrelation) 알고리즘 + 안전한 탐색범위 수정
+        // 원본 Autocorrelation 알고리즘 유지
         function autoCorrelate(buf, sampleRate) {
             let SIZE = buf.length;
             let rms = 0;
@@ -111,7 +124,7 @@
                 rms += val * val;
             }
             rms = Math.sqrt(rms / SIZE);
-            if (rms < 0.01) return -1; // 최소 음량 문턱값
+            if (rms < 0.01) return -1;
 
             let r1 = 0, r2 = SIZE - 1, thres = 0.2;
             for (let i = 0; i < SIZE / 2; i++) {
@@ -151,38 +164,70 @@
             return sampleRate / T0;
         }
 
+        // 파형을 중앙에 고정하는 오실로스코프 영점 교차 트리거
+        function getZeroCrossingOffset(data) {
+            for (let i = 0; i < data.length - 1; i++) {
+                if (data[i] < 128 && data[i + 1] >= 128) {
+                    return i;
+                }
+            }
+            return 0;
+        }
+
         function draw() {
             requestAnimationFrame(draw);
 
+            // 1. 주파수 계산
             let timeData = new Float32Array(analyser.fftSize);
             analyser.getFloatTimeDomainData(timeData);
             
             let preciseHz = autoCorrelate(timeData, audioCtx.sampleRate);
             
-            // 20Hz ~ 15000Hz 범위 내의 정밀 연산값만 화면에 출력
             if (preciseHz >= 20 && preciseHz <= 15000 && isFinite(preciseHz)) {
                 document.getElementById("freqVal").innerText = preciseHz.toFixed(1);
             } else {
                 document.getElementById("freqVal").innerText = "0.0";
             }
 
-            // 실시간 Waveform 캔버스 그리기 (초기 코드 동일)
+            // 2. 오실로스코프 시각화 파형 그리기
             let byteTimeData = new Uint8Array(analyser.fftSize);
             analyser.getByteTimeDomainData(byteTimeData);
 
             canvasCtx.fillStyle = '#0d0d0d';
             canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
 
+            // 보조격자 그리드
+            canvasCtx.strokeStyle = '#1e2d27';
+            canvasCtx.lineWidth = 1;
+            for (let xG = 0; xG < canvas.width; xG += 40) {
+                canvasCtx.beginPath();
+                canvasCtx.moveTo(xG, 0);
+                canvasCtx.lineTo(xG, canvas.height);
+                canvasCtx.stroke();
+            }
+            for (let yG = 0; yG < canvas.height; yG += 40) {
+                canvasCtx.beginPath();
+                canvasCtx.moveTo(0, yG);
+                canvasCtx.lineTo(canvas.width, yG);
+                canvasCtx.stroke();
+            }
+
+            // 실시간 파형 선 그리기
             canvasCtx.lineWidth = 2;
             canvasCtx.strokeStyle = '#00ffcc';
             canvasCtx.beginPath();
 
-            const sliceWidth = canvas.width * 1.0 / analyser.fftSize;
+            const offset = getZeroCrossingOffset(byteTimeData);
+            const visibleSamples = 512; // 렌더링 폭을 줄여 고주파/저주파 간 파형 밀도 차이를 명확히 시각화
+            const sliceWidth = canvas.width / visibleSamples;
             let x = 0;
 
-            for (let i = 0; i < analyser.fftSize; i++) {
-                const v = byteTimeData[i] / 128.0;
-                const y = v * (canvas.height / 2);
+            for (let i = 0; i < visibleSamples; i++) {
+                const idx = offset + i;
+                if (idx >= byteTimeData.length) break;
+
+                const v = byteTimeData[idx] / 128.0; 
+                const y = (v * canvas.height) / 2;
 
                 if (i === 0) {
                     canvasCtx.moveTo(x, y);
@@ -193,9 +238,10 @@
                 x += sliceWidth;
             }
 
-            canvasCtx.lineTo(canvas.width, canvas.height / 2);
             canvasCtx.stroke();
         }
+
+        window.addEventListener('resize', updateCanvasSize);
     </script>
 </body>
 </html>
