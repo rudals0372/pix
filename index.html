@@ -3,134 +3,197 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>정밀 주파수 측정기</title>
+    <title>정밀 주파수 측정기 (복구 및 범위 보정)</title>
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 20px; background: #121212; color: #fff; }
-        .container { max-width: 650px; margin: 0 auto; background: #1e1e1e; padding: 20px; border-radius: 12px; }
-        button { padding: 14px 28px; font-size: 16px; font-weight: bold; border: none; border-radius: 6px; background: #007bff; color: white; cursor: pointer; }
-        button:disabled { background: #444; }
-        .freq-card { background: #2a2a2a; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background: #121212;
+            color: #ffffff;
+        }
+        .container {
+            max-width: 650px;
+            margin: 0 auto;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        button {
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 6px;
+            background: #007bff;
+            color: white;
+            transition: background 0.2s;
+            margin-bottom: 20px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #444444; cursor: not-allowed; }
+        .freq-card {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+        }
+        .freq-title { font-size: 14px; color: #aaa; margin-bottom: 5px; }
         .freq-display { font-size: 42px; font-weight: bold; color: #00ffcc; }
-        #errorLog { color: #ff5555; font-size: 14px; margin-top: 10px; }
-        canvas { width: 100%; height: 200px; background: #0d0d0d; border-radius: 8px; }
+        canvas {
+            width: 100%;
+            height: 220px;
+            background: #0d0d0d;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h2>실시간 주파수 분석기</h2>
+        <h2>실시간 정밀 주파수 분석기</h2>
         <button id="startBtn">측정 시작</button>
-        <div id="errorLog"></div>
         
         <div class="freq-card">
-            <div>측정된 주파수</div>
+            <div class="freq-title">측정된 주파수</div>
             <div class="freq-display"><span id="freqVal">0.0</span> Hz</div>
         </div>
 
-        <canvas id="visualizer"></canvas>
+        <div>
+            <canvas id="visualizer"></canvas>
+        </div>
     </div>
 
     <script>
         let audioCtx;
         let analyser;
-        const canvas = document.getElementById("visualizer");
-        const canvasCtx = canvas.getContext("2d");
-
-        function logError(msg) {
-            document.getElementById("errorLog").innerText = msg;
-        }
+        let microphone;
+        let canvas = document.getElementById("visualizer");
+        let canvasCtx = canvas.getContext("2d");
 
         document.getElementById("startBtn").addEventListener("click", async () => {
-            logError(""); // 에러 초기화
-            
-            // 1. AudioContext 상태 해제 (Safari/모바일 필수)
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (audioCtx.state === 'suspended') {
-                await audioCtx.resume();
-            }
-
-            // 2. 마이크 권한 요청
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: { 
+                        echoCancellation: false, 
+                        noiseSuppression: false, 
+                        autoGainControl: false 
+                    } 
+                });
+                
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 analyser = audioCtx.createAnalyser();
-                analyser.fftSize = 2048;
+                analyser.fftSize = 2048; // 원래 작동하던 2048 크기로 원복
 
-                const microphone = audioCtx.createMediaStreamSource(stream);
+                microphone = audioCtx.createMediaStreamSource(stream);
                 microphone.connect(analyser);
 
                 document.getElementById("startBtn").innerText = "측정 중...";
                 document.getElementById("startBtn").disabled = true;
 
-                canvas.width = canvas.clientWidth || 300;
-                canvas.height = canvas.clientHeight || 200;
-
                 draw();
             } catch (err) {
-                logError("마이크 오류: " + err.name + " - " + err.message + "\n(HTTPS 환경이나 localhost에서 실행했는지 확인하세요)");
+                alert("마이크 접근 실패: " + err);
             }
         });
 
-        // 실시간 FFT 피크 탐색 (안정성 강화)
-        function getPitch(analyser, sampleRate) {
-            const bufferLength = analyser.frequencyBinCount;
-            const dataArray = new Uint8Array(bufferLength);
-            analyser.getByteFrequencyData(dataArray);
+        // 원본 자가상관(Autocorrelation) 알고리즘 + 안전한 탐색범위 수정
+        function autoCorrelate(buf, sampleRate) {
+            let SIZE = buf.length;
+            let rms = 0;
 
-            let maxVal = -1;
-            let maxIndex = -1;
+            for (let i = 0; i < SIZE; i++) {
+                let val = buf[i];
+                rms += val * val;
+            }
+            rms = Math.sqrt(rms / SIZE);
+            if (rms < 0.01) return -1; // 최소 음량 문턱값
 
-            // 전체 대역 중 가장 강한 신호 탐색
-            for (let i = 0; i < bufferLength; i++) {
-                if (dataArray[i] > maxVal) {
-                    maxVal = dataArray[i];
-                    maxIndex = i;
+            let r1 = 0, r2 = SIZE - 1, thres = 0.2;
+            for (let i = 0; i < SIZE / 2; i++) {
+                if (Math.abs(buf[i]) < thres) { r1 = i; break; }
+            }
+            for (let i = 1; i < SIZE / 2; i++) {
+                if (Math.abs(buf[SIZE - i]) < thres) { r2 = SIZE - i; break; }
+            }
+
+            buf = buf.slice(r1, r2);
+            SIZE = buf.length;
+
+            let c = new Float32Array(SIZE);
+            for (let i = 0; i < SIZE; i++) {
+                for (let j = 0; j < SIZE - i; j++) {
+                    c[i] = c[i] + buf[j] * buf[j + i];
                 }
             }
 
-            // 노이즈 임계값 미달 시 0 처리
-            if (maxVal < 50) return 0;
+            let d = 0; 
+            while (c[d] > c[d + 1]) d++;
+            
+            let maxval = -1, maxpos = -1;
+            for (let i = d; i < SIZE; i++) {
+                if (c[i] > maxval) {
+                    maxval = c[i];
+                    maxpos = i;
+                }
+            }
+            let T0 = maxpos;
 
-            const nyquist = sampleRate / 2;
-            const frequency = maxIndex * (nyquist / bufferLength);
+            let x1 = c[T0 - 1], x2 = c[T0], x3 = c[T0 + 1];
+            let a = (x1 + x3 - 2 * x2) / 2;
+            let b = (x3 - x1) / 2;
+            if (a) T0 = T0 - b / (2 * a);
 
-            return frequency;
+            return sampleRate / T0;
         }
 
         function draw() {
             requestAnimationFrame(draw);
-            if (!analyser) return;
 
-            const hz = getPitch(analyser, audioCtx.sampleRate);
+            let timeData = new Float32Array(analyser.fftSize);
+            analyser.getFloatTimeDomainData(timeData);
             
-            if (hz >= 20 && hz <= 15000) {
-                document.getElementById("freqVal").innerText = hz.toFixed(1);
+            let preciseHz = autoCorrelate(timeData, audioCtx.sampleRate);
+            
+            // 20Hz ~ 15000Hz 범위 내의 정밀 연산값만 화면에 출력
+            if (preciseHz >= 20 && preciseHz <= 15000 && isFinite(preciseHz)) {
+                document.getElementById("freqVal").innerText = preciseHz.toFixed(1);
             } else {
                 document.getElementById("freqVal").innerText = "0.0";
             }
 
-            // 파형 그리기
-            const timeData = new Uint8Array(analyser.fftSize);
-            analyser.getByteTimeDomainData(timeData);
+            // 실시간 Waveform 캔버스 그리기 (초기 코드 동일)
+            let byteTimeData = new Uint8Array(analyser.fftSize);
+            analyser.getByteTimeDomainData(byteTimeData);
 
             canvasCtx.fillStyle = '#0d0d0d';
             canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+
             canvasCtx.lineWidth = 2;
             canvasCtx.strokeStyle = '#00ffcc';
             canvasCtx.beginPath();
 
-            const sliceWidth = canvas.width / analyser.fftSize;
+            const sliceWidth = canvas.width * 1.0 / analyser.fftSize;
             let x = 0;
 
             for (let i = 0; i < analyser.fftSize; i++) {
-                const v = timeData[i] / 128.0;
+                const v = byteTimeData[i] / 128.0;
                 const y = v * (canvas.height / 2);
 
-                if (i === 0) canvasCtx.moveTo(x, y);
-                else canvasCtx.lineTo(x, y);
+                if (i === 0) {
+                    canvasCtx.moveTo(x, y);
+                } else {
+                    canvasCtx.lineTo(x, y);
+                }
+
                 x += sliceWidth;
             }
+
+            canvasCtx.lineTo(canvas.width, canvas.height / 2);
             canvasCtx.stroke();
         }
     </script>
