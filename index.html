@@ -56,18 +56,28 @@
             font-size: 11px;
             transition: all 0.2s;
         }
-        /* 감지 시 초록색 점등 */
+
+        /* 1. 정상 수신: 초록색 */
         .freq-card-item.active {
             background: #005826;
             border-color: #00ff66;
             box-shadow: 0 0 8px rgba(0, 255, 102, 0.4);
         }
-        .freq-card-item .name { font-weight: bold; font-size: 13px; color: #00ffcc; }
         .freq-card-item.active .name { color: #ffffff; }
-        .freq-card-item .hz-val { font-size: 10px; color: #aaa; }
         .freq-card-item.active .hz-val { color: #e0e0e0; }
 
-        /* 화면 폭이 아주 좁은 스마트폰 환경 추가 대응 */
+        /* 2. 주파수 떨림/불안정: 노란색 */
+        .freq-card-item.unstable {
+            background: #665200;
+            border-color: #ffcc00;
+            box-shadow: 0 0 8px rgba(255, 204, 0, 0.5);
+        }
+        .freq-card-item.unstable .name { color: #fff; }
+        .freq-card-item.unstable .hz-val { color: #ffeb99; }
+
+        .freq-card-item .name { font-weight: bold; font-size: 13px; color: #00ffcc; }
+        .freq-card-item .hz-val { font-size: 10px; color: #aaa; }
+
         @media (max-width: 400px) {
             .freq-card-item { font-size: 10px; padding: 4px 1px; }
             .freq-card-item .name { font-size: 11px; }
@@ -90,7 +100,7 @@
         <h3 style="margin-top:5px;">자동폐색장치 주파수 분석기</h3>
         <button id="startBtn">측정 시작</button>
         
-        <!-- f1~f14 감지 점등 뱃지 (5열 3행 모바일 배치) -->
+        <!-- f1~f14 감지 점등 뱃지 (5열 3행) -->
         <div class="freq-grid" id="freqGrid"></div>
 
         <div style="text-align: left; font-size: 11px; color: #aaa; margin: 5px 0;">
@@ -119,6 +129,10 @@
 
         const TOLERANCE = 20; // 허용 오차 ±20Hz
         const DISPLAY_MAX_FREQ = 8000;
+
+        // 신호 안정성 추적을 위한 버퍼 (최근 30프레임 상태)
+        const historyMap = {};
+        FREQ_TABLE.forEach(item => historyMap[item.id] = []);
 
         let audioCtx;
         let analyser;
@@ -242,7 +256,7 @@
             analyser.getByteFrequencyData(freqByteData);
 
             const binResolution = (audioCtx.sampleRate / 2) / analyser.frequencyBinCount;
-            const activeMap = {};
+            const currentActive = {};
 
             const totalBinsToDraw = Math.floor(DISPLAY_MAX_FREQ / binResolution);
             const barWidth = graphWidth / totalBinsToDraw;
@@ -258,22 +272,40 @@
                     freqCtx.fillRect(x, graphHeight - barHeight, Math.max(1.5, barWidth), barHeight);
                 }
 
+                // 신호 수신 판별
                 if (val > 60) {
                     FREQ_TABLE.forEach(item => {
                         if (currentHz >= (item.target - TOLERANCE) && currentHz <= (item.target + TOLERANCE)) {
-                            activeMap[item.id] = true;
+                            currentActive[item.id] = true;
                         }
                     });
                 }
             }
 
+            // 신호 연속성 및 떨림(불안정) 상태 계산
             FREQ_TABLE.forEach(item => {
+                const history = historyMap[item.id];
+                const isDetected = !!currentActive[item.id];
+
+                // 히스토리에 현재 감지 여부 기록 (최근 30프레임)
+                history.push(isDetected ? 1 : 0);
+                if (history.length > 30) history.shift();
+
+                // 감지 비율 계산 (1의 개수)
+                const detectedCount = history.reduce((acc, curr) => acc + curr, 0);
+                const ratio = detectedCount / history.length;
+
                 const cardEl = document.getElementById(`card-${item.id}`);
-                if (activeMap[item.id]) {
+                cardEl.className = "freq-card-item";
+
+                if (ratio >= 0.8) {
+                    // 최근 80% 이상 안정적으로 들어옴 -> 초록색
                     cardEl.classList.add("active");
-                } else {
-                    cardEl.classList.remove("active");
+                } else if (ratio >= 0.25) {
+                    // 감지되었다 안 되었다 불안정하게 떨림 -> 노란색
+                    cardEl.classList.add("unstable");
                 }
+                // ratio < 0.25 는 회색 (미감지)
             });
         }
 
