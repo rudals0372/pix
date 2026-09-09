@@ -5,18 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>자동폐색장치 주파수 진단기 (f1~f14)</title>
     <style>
+        * { box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             text-align: center;
-            padding: 15px;
+            padding: 10px;
             background: #121212;
             color: #ffffff;
+            margin: 0;
         }
         .container {
             max-width: 900px;
             margin: 0 auto;
             background: #1e1e1e;
-            padding: 20px;
+            padding: 15px;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
@@ -29,44 +31,52 @@
             border-radius: 6px;
             background: #007bff;
             color: white;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
+            width: 100%;
+            max-width: 300px;
         }
         button:disabled { background: #444444; cursor: not-allowed; }
 
-        /* f1~f14 카드 Grid: 7열 2행 고정 레이아웃 */
+        /* 모바일 최적화: 5열 3행 그리드 배치 */
         .freq-grid {
             display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            grid-template-rows: repeat(2, auto);
-            gap: 8px;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
             background: #181818;
-            padding: 12px;
+            padding: 10px;
             border-radius: 8px;
             margin-bottom: 15px;
             border: 1px solid #333;
         }
         .freq-card-item {
             background: #252525;
-            padding: 8px 4px;
+            padding: 6px 2px;
             border-radius: 6px;
             border: 1px solid #444;
-            font-size: 12px;
+            font-size: 11px;
             transition: all 0.2s;
         }
         /* 감지 시 초록색 점등 */
         .freq-card-item.active {
             background: #005826;
             border-color: #00ff66;
-            box-shadow: 0 0 10px rgba(0, 255, 102, 0.4);
+            box-shadow: 0 0 8px rgba(0, 255, 102, 0.4);
         }
-        .freq-card-item .name { font-weight: bold; font-size: 14px; color: #00ffcc; }
+        .freq-card-item .name { font-weight: bold; font-size: 13px; color: #00ffcc; }
         .freq-card-item.active .name { color: #ffffff; }
-        .freq-card-item .hz-val { font-size: 11px; color: #aaa; }
+        .freq-card-item .hz-val { font-size: 10px; color: #aaa; }
         .freq-card-item.active .hz-val { color: #e0e0e0; }
+
+        /* 화면 폭이 아주 좁은 스마트폰 환경 추가 대응 */
+        @media (max-width: 400px) {
+            .freq-card-item { font-size: 10px; padding: 4px 1px; }
+            .freq-card-item .name { font-size: 11px; }
+            .freq-card-item .hz-val { font-size: 9px; }
+        }
 
         canvas {
             width: 100%;
-            height: 320px;
+            height: 280px;
             background: #0d0d0d;
             border-radius: 8px;
             border: 1px solid #333;
@@ -77,14 +87,14 @@
 <body>
 
     <div class="container">
-        <h2>자동폐색장치 주파수(f1~f14) 분석기</h2>
+        <h3 style="margin-top:5px;">자동폐색장치 주파수 분석기</h3>
         <button id="startBtn">측정 시작</button>
         
-        <!-- f1~f14 감지 점등 뱃지 (7열 2행) -->
+        <!-- f1~f14 감지 점등 뱃지 (5열 3행 모바일 배치) -->
         <div class="freq-grid" id="freqGrid"></div>
 
-        <div style="text-align: left; font-size: 12px; color: #aaa; margin: 5px 0;">
-            주파수 스펙트럼 (범주: f1~f14 표준 허용범위 ±20Hz)
+        <div style="text-align: left; font-size: 11px; color: #aaa; margin: 5px 0;">
+            주파수 스펙트럼 (범주: f1~f14 표준 ±20Hz)
         </div>
         <canvas id="freqCanvas"></canvas>
     </div>
@@ -108,7 +118,7 @@
         ];
 
         const TOLERANCE = 20; // 허용 오차 ±20Hz
-        const DISPLAY_MAX_FREQ = 8000; // f14(7125Hz) 표시를 위해 8kHz까지 확장
+        const DISPLAY_MAX_FREQ = 8000;
 
         let audioCtx;
         let analyser;
@@ -125,7 +135,7 @@
                 card.innerHTML = `
                     <div class="name">${item.id}</div>
                     <div class="hz-val">${item.target}Hz</div>
-                    <div style="font-size:9px; color:#777;">${item.tx}/${item.rx}</div>
+                    <div style="font-size:8px; color:#777;">${item.tx}/${item.rx}</div>
                 `;
                 gridEl.appendChild(card);
             });
@@ -171,11 +181,9 @@
                 const xMax = paddingLeft + (maxHz / DISPLAY_MAX_FREQ) * graphWidth;
                 const xCenter = paddingLeft + (item.target / DISPLAY_MAX_FREQ) * graphWidth;
 
-                // 허용 범위 영역
                 freqCtx.fillStyle = 'rgba(0, 255, 100, 0.12)';
                 freqCtx.fillRect(xMin, 0, Math.max(2, xMax - xMin), graphHeight);
 
-                // Target 위치 점선
                 freqCtx.strokeStyle = 'rgba(0, 255, 200, 0.4)';
                 freqCtx.lineWidth = 1;
                 freqCtx.setLineDash([2, 4]);
@@ -186,14 +194,14 @@
                 freqCtx.setLineDash([]);
 
                 freqCtx.fillStyle = '#00ffcc';
-                freqCtx.font = '10px monospace';
-                freqCtx.fillText(item.id, xCenter - 6, 12);
+                freqCtx.font = '9px monospace';
+                freqCtx.fillText(item.id, xCenter - 5, 10);
             });
         }
 
         function drawGridAndAxes() {
-            const paddingLeft = 40;
-            const paddingBottom = 25;
+            const paddingLeft = 35;
+            const paddingBottom = 20;
             const graphWidth = freqCanvas.width - paddingLeft;
             const graphHeight = freqCanvas.height - paddingBottom;
 
@@ -202,16 +210,16 @@
 
             freqCtx.strokeStyle = '#222';
             freqCtx.fillStyle = '#777';
-            freqCtx.font = '10px monospace';
+            freqCtx.font = '9px monospace';
             freqCtx.lineWidth = 1;
 
-            for (let hz = 0; hz <= DISPLAY_MAX_FREQ; hz += 1000) {
+            for (let hz = 0; hz <= DISPLAY_MAX_FREQ; hz += 2000) {
                 const xPos = paddingLeft + (hz / DISPLAY_MAX_FREQ) * graphWidth;
                 freqCtx.beginPath();
                 freqCtx.moveTo(xPos, 0);
                 freqCtx.lineTo(xPos, graphHeight);
                 freqCtx.stroke();
-                freqCtx.fillText(`${hz / 1000}k`, xPos - 8, freqCanvas.height - 8);
+                freqCtx.fillText(`${hz / 1000}k`, xPos - 6, freqCanvas.height - 5);
             }
 
             freqCtx.strokeStyle = '#444';
@@ -250,7 +258,6 @@
                     freqCtx.fillRect(x, graphHeight - barHeight, Math.max(1.5, barWidth), barHeight);
                 }
 
-                // 해당 범위 내 신호 출력 시 감지 활성화
                 if (val > 60) {
                     FREQ_TABLE.forEach(item => {
                         if (currentHz >= (item.target - TOLERANCE) && currentHz <= (item.target + TOLERANCE)) {
@@ -260,7 +267,6 @@
                 }
             }
 
-            // 초록색 점등 갱신
             FREQ_TABLE.forEach(item => {
                 const cardEl = document.getElementById(`card-${item.id}`);
                 if (activeMap[item.id]) {
