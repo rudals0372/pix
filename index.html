@@ -22,6 +22,8 @@
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
+        
+        /* 버튼 기본 스타일 (측정 시작: 파란색) */
         button {
             padding: 12px 24px;
             font-size: 16px;
@@ -34,10 +36,14 @@
             margin-bottom: 12px;
             width: 100%;
             max-width: 300px;
+            transition: background 0.2s;
         }
-        button:disabled { background: #444444; cursor: not-allowed; }
+        /* 측정 중일 때 (측정 종료: 빨간색) */
+        button.is-measuring {
+            background: #dc3545;
+        }
 
-        /* 모바일 최적화: 5열 3행 그리드 배치 */
+        /* 5열 3행 그리드 배치 */
         .freq-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -98,7 +104,7 @@
 
     <div class="container">
         <h3 style="margin-top:5px;">자동폐색장치 주파수 분석기</h3>
-        <button id="startBtn">측정 시작</button>
+        <button id="toggleBtn">측정 시작</button>
         
         <!-- f1~f14 감지 점등 뱃지 (5열 3행) -->
         <div class="freq-grid" id="freqGrid"></div>
@@ -127,15 +133,19 @@
             { id: 'f14', tx: 'T714', rx: 'R714', target: 7125 }
         ];
 
-        const TOLERANCE = 20; // 허용 오차 ±20Hz
+        const TOLERANCE = 20;
         const DISPLAY_MAX_FREQ = 8000;
 
-        // 신호 안정성 추적을 위한 버퍼 (최근 30프레임 상태)
         const historyMap = {};
         FREQ_TABLE.forEach(item => historyMap[item.id] = []);
 
-        let audioCtx;
-        let analyser;
+        let audioCtx = null;
+        let analyser = null;
+        let mediaStream = null;
+        let animationFrameId = null;
+        let isMeasuring = false;
+
+        const toggleBtn = document.getElementById("toggleBtn");
         const freqCanvas = document.getElementById("freqCanvas");
         const freqCtx = freqCanvas.getContext("2d");
 
@@ -161,9 +171,19 @@
             freqCanvas.height = freqCanvas.clientHeight;
         }
 
-        document.getElementById("startBtn").addEventListener("click", async () => {
+        // 토글 버튼 클릭 처리
+        toggleBtn.addEventListener("click", async () => {
+            if (!isMeasuring) {
+                await startMeasurement();
+            } else {
+                stopMeasurement();
+            }
+        });
+
+        // 측정 시작
+        async function startMeasurement() {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ 
+                mediaStream = await navigator.mediaDevices.getUserMedia({ 
                     audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } 
                 });
                 
@@ -173,18 +193,54 @@
                 analyser = audioCtx.createAnalyser();
                 analyser.fftSize = 4096;
 
-                const microphone = audioCtx.createMediaStreamSource(stream);
+                const microphone = audioCtx.createMediaStreamSource(mediaStream);
                 microphone.connect(analyser);
 
-                document.getElementById("startBtn").innerText = "실시간 감지 중...";
-                document.getElementById("startBtn").disabled = true;
+                isMeasuring = true;
+                toggleBtn.innerText = "측정 종료";
+                toggleBtn.classList.add("is-measuring");
 
                 updateCanvasSize();
                 draw();
             } catch (err) {
                 alert("마이크 접근 실패: " + err);
             }
-        });
+        }
+
+        // 측정 종료
+        function stopMeasurement() {
+            isMeasuring = false;
+
+            // 1. 애니메이션 루프 멈춤
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+
+            // 2. 마이크 스트림 닫기
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+                mediaStream = null;
+            }
+
+            // 3. AudioContext 종료
+            if (audioCtx) {
+                audioCtx.close();
+                audioCtx = null;
+            }
+
+            // 4. UI 및 캔버스 초기화
+            toggleBtn.innerText = "측정 시작";
+            toggleBtn.classList.remove("is-measuring");
+
+            FREQ_TABLE.forEach(item => {
+                historyMap[item.id] = [];
+                const cardEl = document.getElementById(`card-${item.id}`);
+                cardEl.className = "freq-card-item";
+            });
+
+            drawGridAndAxes();
+        }
 
         function drawGuides(paddingLeft, graphWidth, graphHeight) {
             FREQ_TABLE.forEach(item => {
@@ -247,7 +303,9 @@
         }
 
         function draw() {
-            requestAnimationFrame(draw);
+            if (!isMeasuring) return;
+
+            animationFrameId = requestAnimationFrame(draw);
 
             const { paddingLeft, graphHeight, graphWidth } = drawGridAndAxes();
             drawGuides(paddingLeft, graphWidth, graphHeight);
@@ -272,7 +330,6 @@
                     freqCtx.fillRect(x, graphHeight - barHeight, Math.max(1.5, barWidth), barHeight);
                 }
 
-                // 신호 수신 판별
                 if (val > 60) {
                     FREQ_TABLE.forEach(item => {
                         if (currentHz >= (item.target - TOLERANCE) && currentHz <= (item.target + TOLERANCE)) {
@@ -282,16 +339,13 @@
                 }
             }
 
-            // 신호 연속성 및 떨림(불안정) 상태 계산
             FREQ_TABLE.forEach(item => {
                 const history = historyMap[item.id];
                 const isDetected = !!currentActive[item.id];
 
-                // 히스토리에 현재 감지 여부 기록 (최근 30프레임)
                 history.push(isDetected ? 1 : 0);
                 if (history.length > 30) history.shift();
 
-                // 감지 비율 계산 (1의 개수)
                 const detectedCount = history.reduce((acc, curr) => acc + curr, 0);
                 const ratio = detectedCount / history.length;
 
@@ -299,17 +353,17 @@
                 cardEl.className = "freq-card-item";
 
                 if (ratio >= 0.8) {
-                    // 최근 80% 이상 안정적으로 들어옴 -> 초록색
                     cardEl.classList.add("active");
                 } else if (ratio >= 0.25) {
-                    // 감지되었다 안 되었다 불안정하게 떨림 -> 노란색
                     cardEl.classList.add("unstable");
                 }
-                // ratio < 0.25 는 회색 (미감지)
             });
         }
 
-        window.addEventListener('resize', updateCanvasSize);
+        window.addEventListener('resize', () => {
+            updateCanvasSize();
+            if (!isMeasuring) drawGridAndAxes();
+        });
     </script>
 </body>
 </html>
