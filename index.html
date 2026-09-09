@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>주파수 스펙트럼 진단기 (눈금 라벨 포함)</title>
+    <title>자동폐색장치 주파수 진단기 (f1~f13 매핑)</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             text-align: center;
-            padding: 20px;
+            padding: 15px;
             background: #121212;
             color: #ffffff;
         }
         .container {
-            max-width: 700px;
+            max-width: 800px;
             margin: 0 auto;
             background: #1e1e1e;
             padding: 20px;
@@ -21,7 +21,7 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
         button {
-            padding: 14px 28px;
+            padding: 12px 24px;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
@@ -29,36 +29,42 @@
             border-radius: 6px;
             background: #007bff;
             color: white;
-            transition: background 0.2s;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
-        button:hover { background: #0056b3; }
         button:disabled { background: #444444; cursor: not-allowed; }
-        
-        .freq-card {
-            background: #2a2a2a;
-            padding: 15px;
+
+        /* 매핑 현황 현황판 Grid */
+        .freq-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 8px;
+            background: #181818;
+            padding: 12px;
             border-radius: 8px;
             margin-bottom: 15px;
             border: 1px solid #333;
         }
-        .freq-display { font-size: 42px; font-weight: bold; color: #00ffcc; font-family: monospace; }
-        
-        .multi-freq-box {
-            display: flex;
-            justify-content: space-around;
-            background: #181818;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border: 1px solid #333;
+        .freq-card-item {
+            background: #252525;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #444;
+            font-size: 12px;
+            transition: all 0.2s;
         }
-        .multi-freq-item { font-size: 14px; font-family: monospace; }
-        .multi-freq-item span { font-weight: bold; color: #ffcc00; }
+        .freq-card-item.active {
+            background: #005826;
+            border-color: #00ff66;
+            box-shadow: 0 0 10px rgba(0, 255, 102, 0.4);
+        }
+        .freq-card-item .name { font-weight: bold; font-size: 14px; color: #00ffcc; }
+        .freq-card-item.active .name { color: #ffffff; }
+        .freq-card-item .hz-val { font-size: 11px; color: #aaa; }
+        .freq-card-item.active .hz-val { color: #e0e0e0; }
 
         canvas {
             width: 100%;
-            height: 300px;
+            height: 320px;
             background: #0d0d0d;
             border-radius: 8px;
             border: 1px solid #333;
@@ -69,30 +75,61 @@
 <body>
 
     <div class="container">
-        <h2>실시간 주파수 스펙트럼 분석기</h2>
+        <h2>자동폐색장치 주파수(f1~f13) 분석기</h2>
         <button id="startBtn">측정 시작</button>
         
-        <div class="freq-card">
-            <div style="font-size: 14px; color: #aaa; margin-bottom: 5px;">대표 측정 주파수 (자가상관)</div>
-            <div class="freq-display"><span id="freqVal">0.0</span> Hz</div>
-        </div>
+        <!-- 실시간 f1~f13 매핑 감지 뱃지 -->
+        <div class="freq-grid" id="freqGrid"></div>
 
-        <div class="multi-freq-box">
-            <div class="multi-freq-item">1순위 피크: <span id="top1">0</span> Hz</div>
-            <div class="multi-freq-item">2순위 피크: <span id="top2">0</span> Hz</div>
-            <div class="multi-freq-item">3순위 피크: <span id="top3">0</span> Hz</div>
+        <div style="text-align: left; font-size: 12px; color: #aaa; margin: 5px 0;">
+            주파수 스펙트럼 (점선/영역: f1~f13 표준 허용범위 ±20Hz)
         </div>
-
-        <div style="text-align: left; font-size: 12px; color: #aaa; margin: 5px 0;">주파수 스펙트럼 분포 (Horizontal: Hz / Vertical: Signal Level)</div>
         <canvas id="freqCanvas"></canvas>
     </div>
 
     <script>
+        // 이미지 매뉴얼 표준 주파수 테이블 데이터 정의
+        const FREQ_TABLE = [
+            { id: 'f1',  tx: 'T701', rx: 'R701', target: 625 },
+            { id: 'f2',  tx: 'T702', rx: 'R702', target: 875 },
+            { id: 'f3',  tx: 'T703', rx: 'R703', target: 1125 },
+            { id: 'f4',  tx: 'T704', rx: 'R704', target: 1375 },
+            { id: 'f5',  tx: 'T705', rx: 'R705', target: 1625 },
+            { id: 'f6',  tx: 'T706', rx: 'R706', target: 1875 },
+            { id: 'f7',  tx: 'T707', rx: 'R707', target: 2125 },
+            { id: 'f8',  tx: 'T708', rx: 'R708', target: 2375 },
+            { id: 'f9',  tx: 'T709', rx: 'R509', target: 2625 },
+            { id: 'f10', tx: 'T710', rx: 'R710', target: 3125 },
+            { id: 'f11', tx: 'T711', rx: 'R711', target: 3625 },
+            { id: 'f12', tx: 'T712', rx: 'R712', target: 4125 },
+            { id: 'f13', tx: 'T713', rx: 'R713', target: 4625 }
+        ];
+
+        const TOLERANCE = 20; // 허용 오차 ±20Hz
+        const DISPLAY_MAX_FREQ = 5000; // 그래프 표시 최대 주파수 (5kHz)
+
         let audioCtx;
         let analyser;
-        
         const freqCanvas = document.getElementById("freqCanvas");
         const freqCtx = freqCanvas.getContext("2d");
+
+        // UI 그리드 생성
+        function initGrid() {
+            const gridEl = document.getElementById("freqGrid");
+            gridEl.innerHTML = "";
+            FREQ_TABLE.forEach(item => {
+                const card = document.createElement("div");
+                card.className = "freq-card-item";
+                card.id = `card-${item.id}`;
+                card.innerHTML = `
+                    <div class="name">${item.id}</div>
+                    <div class="hz-val">${item.target}Hz</div>
+                    <div style="font-size:9px; color:#777;">${item.tx}/${item.rx}</div>
+                `;
+                gridEl.appendChild(card);
+            });
+        }
+        initGrid();
 
         function updateCanvasSize() {
             freqCanvas.width = freqCanvas.clientWidth;
@@ -102,23 +139,19 @@
         document.getElementById("startBtn").addEventListener("click", async () => {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ 
-                    audio: { 
-                        echoCancellation: false, 
-                        noiseSuppression: false, 
-                        autoGainControl: false 
-                    } 
+                    audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } 
                 });
                 
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 if (audioCtx.state === 'suspended') await audioCtx.resume();
 
                 analyser = audioCtx.createAnalyser();
-                analyser.fftSize = 2048;
+                analyser.fftSize = 4096; // 정밀한 주파수 분해능을 위해 4096 설정
 
                 const microphone = audioCtx.createMediaStreamSource(stream);
                 microphone.connect(analyser);
 
-                document.getElementById("startBtn").innerText = "측정 중...";
+                document.getElementById("startBtn").innerText = "실시간 감지 중...";
                 document.getElementById("startBtn").disabled = true;
 
                 updateCanvasSize();
@@ -128,73 +161,39 @@
             }
         });
 
-        function autoCorrelate(buf, sampleRate) {
-            let SIZE = buf.length;
-            let rms = 0;
+        // 캔버스 배경에 f1~f13 가이드 라인 및 범주(±20Hz) 그리기
+        function drawGuides(paddingLeft, graphWidth, graphHeight) {
+            FREQ_TABLE.forEach(item => {
+                const minHz = item.target - TOLERANCE;
+                const maxHz = item.target + TOLERANCE;
 
-            for (let i = 0; i < SIZE; i++) {
-                let val = buf[i];
-                rms += val * val;
-            }
-            rms = Math.sqrt(rms / SIZE);
-            if (rms < 0.001) return -1;
+                const xMin = paddingLeft + (minHz / DISPLAY_MAX_FREQ) * graphWidth;
+                const xMax = paddingLeft + (maxHz / DISPLAY_MAX_FREQ) * graphWidth;
+                const xCenter = paddingLeft + (item.target / DISPLAY_MAX_FREQ) * graphWidth;
 
-            let r1 = 0, r2 = SIZE - 1, thres = 0.2;
-            for (let i = 0; i < SIZE / 2; i++) {
-                if (Math.abs(buf[i]) < thres) { r1 = i; break; }
-            }
-            for (let i = 1; i < SIZE / 2; i++) {
-                if (Math.abs(buf[SIZE - i]) < thres) { r2 = SIZE - i; break; }
-            }
+                // 1. 허용 범주 수직 밴드 영역 (연한 녹색 배경)
+                freqCtx.fillStyle = 'rgba(0, 255, 100, 0.12)';
+                freqCtx.fillRect(xMin, 0, Math.max(2, xMax - xMin), graphHeight);
 
-            buf = buf.slice(r1, r2);
-            SIZE = buf.length;
+                // 2. 중심 Target 주파수 점선
+                freqCtx.strokeStyle = 'rgba(0, 255, 200, 0.4)';
+                freqCtx.lineWidth = 1;
+                freqCtx.setLineDash([2, 4]);
+                freqCtx.beginPath();
+                freqCtx.moveTo(xCenter, 0);
+                freqCtx.lineTo(xCenter, graphHeight);
+                freqCtx.stroke();
+                freqCtx.setLineDash([]); // Reset
 
-            let c = new Float32Array(SIZE);
-            for (let i = 0; i < SIZE; i++) {
-                for (let j = 0; j < SIZE - i; j++) {
-                    c[i] = c[i] + buf[j] * buf[j + i];
-                }
-            }
-
-            let d = 0; 
-            while (c[d] > c[d + 1]) d++;
-            
-            let maxval = -1, maxpos = -1;
-            for (let i = d; i < SIZE; i++) {
-                if (c[i] > maxval) {
-                    maxval = c[i];
-                    maxpos = i;
-                }
-            }
-            let T0 = maxpos;
-
-            let x1 = c[T0 - 1], x2 = c[T0], x3 = c[T0 + 1];
-            let a = (x1 + x3 - 2 * x2) / 2;
-            let b = (x3 - x1) / 2;
-            if (a) T0 = T0 - b / (2 * a);
-
-            return sampleRate / T0;
+                // 3. 상단 라벨 (f1, f2 ...)
+                freqCtx.fillStyle = '#00ffcc';
+                freqCtx.font = '10px monospace';
+                freqCtx.fillText(item.id, xCenter - 6, 12);
+            });
         }
 
-        function getTopFrequencies(freqArray, sampleRate) {
-            let peaks = [];
-            const binSize = sampleRate / analyser.fftSize;
-
-            for (let i = 2; i < freqArray.length - 2; i++) {
-                if (freqArray[i] > 30 && freqArray[i] > freqArray[i - 1] && freqArray[i] > freqArray[i + 1]) {
-                    peaks.push({
-                        hz: Math.round(i * binSize),
-                        val: freqArray[i]
-                    });
-                }
-            }
-            peaks.sort((a, b) => b.val - a.val);
-            return peaks.slice(0, 3);
-        }
-
-        function drawGridAndAxes(sampleRate, maxFreq) {
-            const paddingLeft = 45;
+        function drawGridAndAxes() {
+            const paddingLeft = 40;
             const paddingBottom = 25;
             const graphWidth = freqCanvas.width - paddingLeft;
             const graphHeight = freqCanvas.height - paddingBottom;
@@ -202,42 +201,23 @@
             freqCtx.fillStyle = '#0d0d0d';
             freqCtx.fillRect(0, 0, freqCanvas.width, freqCanvas.height);
 
-            freqCtx.strokeStyle = '#22332b';
-            freqCtx.fillStyle = '#888888';
+            // 축 및 눈금
+            freqCtx.strokeStyle = '#222';
+            freqCtx.fillStyle = '#777';
             freqCtx.font = '10px monospace';
             freqCtx.lineWidth = 1;
 
-            // 1. 세로축 눈금 (신호 강도 %)
-            const ySteps = [
-                { text: '100%', y: 15 },
-                { text: ' 50%', y: graphHeight / 2 },
-                { text: '  0%', y: graphHeight }
-            ];
-            
-            ySteps.forEach(step => {
-                freqCtx.beginPath();
-                freqCtx.moveTo(paddingLeft, step.y);
-                freqCtx.lineTo(freqCanvas.width, step.y);
-                freqCtx.stroke();
-                freqCtx.fillText(step.text, 5, step.y + 3);
-            });
-
-            // 2. 가로축 눈금 (주파수 Hz)
-            const xDivisions = 5;
-            for (let i = 0; i <= xDivisions; i++) {
-                const xPos = paddingLeft + (graphWidth / xDivisions) * i;
-                const freqHz = Math.round((maxFreq / xDivisions) * i);
-                let labelText = freqHz >= 1000 ? `${(freqHz / 1000).toFixed(1)}k` : `${freqHz}`;
-
+            // X축 (Hz 단위)
+            for (let hz = 0; hz <= DISPLAY_MAX_FREQ; hz += 1000) {
+                const xPos = paddingLeft + (hz / DISPLAY_MAX_FREQ) * graphWidth;
                 freqCtx.beginPath();
                 freqCtx.moveTo(xPos, 0);
                 freqCtx.lineTo(xPos, graphHeight);
                 freqCtx.stroke();
-
-                freqCtx.fillText(`${labelText}Hz`, xPos - 12, freqCanvas.height - 8);
+                freqCtx.fillText(`${hz / 1000}k`, xPos - 8, freqCanvas.height - 8);
             }
 
-            // 축 메인 라인
+            // 축선
             freqCtx.strokeStyle = '#444';
             freqCtx.beginPath();
             freqCtx.moveTo(paddingLeft, 0);
@@ -251,41 +231,52 @@
         function draw() {
             requestAnimationFrame(draw);
 
-            let timeData = new Float32Array(analyser.fftSize);
-            analyser.getFloatTimeDomainData(timeData);
-            let preciseHz = autoCorrelate(timeData, audioCtx.sampleRate);
+            const { paddingLeft, graphHeight, graphWidth } = drawGridAndAxes();
             
-            if (preciseHz >= 20 && preciseHz <= 15000 && isFinite(preciseHz)) {
-                document.getElementById("freqVal").innerText = preciseHz.toFixed(1);
-            } else {
-                document.getElementById("freqVal").innerText = "0.0";
-            }
+            // 가이드라인 (f1~f13 영역) 그리기
+            drawGuides(paddingLeft, graphWidth, graphHeight);
 
             let freqByteData = new Uint8Array(analyser.frequencyBinCount);
             analyser.getByteFrequencyData(freqByteData);
-            
-            let topPeaks = getTopFrequencies(freqByteData, audioCtx.sampleRate);
-            document.getElementById("top1").innerText = topPeaks[0] ? topPeaks[0].hz : 0;
-            document.getElementById("top2").innerText = topPeaks[1] ? topPeaks[1].hz : 0;
-            document.getElementById("top3").innerText = topPeaks[2] ? topPeaks[2].hz : 0;
 
-            // 시각화할 최대 주파수 범위 (Nyquist 절반 대역 기준: 약 5.5kHz까지 표시)
-            const visibleBins = Math.floor(analyser.frequencyBinCount / 4); 
-            const maxFreq = (audioCtx.sampleRate / 2) * (visibleBins / analyser.frequencyBinCount);
+            const binResolution = (audioCtx.sampleRate / 2) / analyser.frequencyBinCount;
+            const activeMap = {}; // 활성화된 f1~f13 판별용
 
-            const { paddingLeft, graphHeight, graphWidth } = drawGridAndAxes(audioCtx.sampleRate, maxFreq);
+            // 1. FFT 스펙트럼 그리기
+            const totalBinsToDraw = Math.floor(DISPLAY_MAX_FREQ / binResolution);
+            const barWidth = graphWidth / totalBinsToDraw;
 
-            const barWidth = graphWidth / visibleBins;
-            let posX = paddingLeft;
+            for (let i = 0; i < totalBinsToDraw; i++) {
+                const currentHz = i * binResolution;
+                const val = freqByteData[i];
+                const barHeight = (val / 255) * graphHeight;
+                const x = paddingLeft + (currentHz / DISPLAY_MAX_FREQ) * graphWidth;
 
-            for (let i = 0; i < visibleBins; i++) {
-                const barHeight = (freqByteData[i] / 255) * graphHeight;
-                
-                freqCtx.fillStyle = `hsl(${200 - (freqByteData[i] / 255) * 160}, 100%, 50%)`;
-                freqCtx.fillRect(posX, graphHeight - barHeight, Math.max(1, barWidth - 1), barHeight);
-                
-                posX += barWidth;
+                // 스펙트럼 막대 그리기
+                if (val > 0) {
+                    freqCtx.fillStyle = `hsl(${200 - (val / 255) * 160}, 100%, 50%)`;
+                    freqCtx.fillRect(x, graphHeight - barHeight, Math.max(1.5, barWidth), barHeight);
+                }
+
+                // 2. 신호 감지 판별 (특정 문턱값 80 이상 감지 시 매핑)
+                if (val > 80) {
+                    FREQ_TABLE.forEach(item => {
+                        if (currentHz >= (item.target - TOLERANCE) && currentHz <= (item.target + TOLERANCE)) {
+                            activeMap[item.id] = true;
+                        }
+                    });
+                }
             }
+
+            // 3. 상단 f1~f13 카드 상태 갱신 (625Hz, 1625Hz 등이 들어오면 초록색 점등)
+            FREQ_TABLE.forEach(item => {
+                const cardEl = document.getElementById(`card-${item.id}`);
+                if (activeMap[item.id]) {
+                    cardEl.classList.add("active");
+                } else {
+                    cardEl.classList.remove("active");
+                }
+            });
         }
 
         window.addEventListener('resize', updateCanvasSize);
