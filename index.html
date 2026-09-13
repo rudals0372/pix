@@ -330,7 +330,7 @@
                     freqCtx.fillRect(x, graphHeight - barHeight, Math.max(1.5, barWidth), barHeight);
                 }
 
-                if (val > 60) {
+                if (val > 120) {
                     FREQ_TABLE.forEach(item => {
                         if (currentHz >= (item.target - TOLERANCE) && currentHz <= (item.target + TOLERANCE)) {
                             currentActive[item.id] = true;
