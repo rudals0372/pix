@@ -256,11 +256,15 @@
 
         async function startMeasurement() {
             try {
+                // C타입 디지털 젠더 및 브라우저의 오디오 압축/보정 알고리즘 완전 차단 설정
                 mediaStream = await navigator.mediaDevices.getUserMedia({
                     audio: {
                         echoCancellation: false,
                         noiseSuppression: false,
-                        autoGainControl: false
+                        autoGainControl: false,
+                        channelCount: 1,
+                        sampleRate: 44100,
+                        sampleSize: 16
                     }
                 });
 
@@ -269,18 +273,16 @@
                     await audioCtx.resume();
                 }
 
-                // C타입 젠더 저주파 대역 감쇄 보정을 위한 하이패스 필터 추가
                 const highPassFilter = audioCtx.createBiquadFilter();
                 highPassFilter.type = 'highpass';
-                highPassFilter.frequency.setValueAtTime(100, audioCtx.currentTime); // 100Hz 이하 노이즈 및 왜곡 차단
+                highPassFilter.frequency.setValueAtTime(80, audioCtx.currentTime);
 
                 analyser = audioCtx.createAnalyser();
                 analyser.fftSize = 4096;
-                analyser.smoothingTimeConstant = 0.85;
+                analyser.smoothingTimeConstant = 0.80; // 반응 속도를 조금 더 빠르게 조절
 
                 microphoneNode = audioCtx.createMediaStreamSource(mediaStream);
                 
-                // 마이크 노드 -> 하이패스 필터 -> 분석기 연결
                 microphoneNode.connect(highPassFilter);
                 highPassFilter.connect(analyser);
 
@@ -396,14 +398,21 @@
                     if (freqData[b] > channelMax) channelMax = freqData[b];
                 }
 
-                // C타입 젠더는 입력 신호 감도가 낮으므로 기본 증폭률에 추가 보정 계수(1.3배) 적용
-                const cTypeBoost = 1.3;
+                // C타입 젠더 수신율 개선을 위한 기본 증폭 보정 계수(1.6배) 적용
+                const cTypeBoost = 1.6;
                 let amplifiedVal = Math.min(255, channelMax * gainMultiplier * cTypeBoost);
                 let instantPct = Math.round((amplifiedVal / 255) * 100);
 
-                if (instantPct < 10) instantPct = 0;
+                if (instantPct < 8) instantPct = 0;
 
-                // EMA(지수 이동 평균) 필터 적용
+                // EMA 필터링 계산
+                if (smoothedLevels[item.id] === undefined) {
+                    smoothedLevels[item.id] = 0;
+                }
+                
+                // 값이 올라갈 때는 빠르게, 내려갈 때는 부드럽게 반응하도록 설정
+                const alpha = instantPct > smoothedLevels[item.id] ? 0.6 : 0.2;
+                smoothedLevels[item.id] = smoothedLevels[item.id] + alpha * (instantPct - smoothedLevels[item.id]);
 
                 const levelPct = Math.round(smoothedLevels[item.id]);
 
