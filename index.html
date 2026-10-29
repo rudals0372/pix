@@ -146,15 +146,17 @@
         let animationFrameId = null;
         let isMeasuring = false;
 
-        // Peak-Hold Memory
-        const channelPeakHold = {};
-        const channelPeakTimer = {};
+        // Peak variables definition
         let overallPeakHz = 0;
         let overallPeakTimer = 0;
+        const channelPeakHold = {};
+
+        // Exponential Moving Average (EMA) smoothed levels for stable yet responsive metering
+        const smoothedLevels = {};
 
         FREQ_TABLE.forEach(item => {
+            smoothedLevels[item.id] = 0;
             channelPeakHold[item.id] = 0;
-            channelPeakTimer[item.id] = 0;
         });
 
         // Gain Multiplier
@@ -391,15 +393,11 @@
 
                 if (instantPct < 10) instantPct = 0;
 
-                // Peak Hold & Decay
-                if (instantPct >= channelPeakHold[item.id]) {
-                    channelPeakHold[item.id] = instantPct;
-                    channelPeakTimer[item.id] = now + 2000; // peak 유지 딜레이 시간 (2.0초)
-                } else if (now > channelPeakTimer[item.id]) {
-                    channelPeakHold[item.id] = Math.max(0, channelPeakHold[item.id] - 0.5); // 천천히 감쇄
-                }
+                // EMA(지수 이동 평균) 필터 적용: 피크를 억지로 붙잡지 않고 부드럽게 따라가되 널뛰기를 완화
+                const alpha = 0.25; // 값이 클수록 반응이 빠르고, 작을수록 부드러워짐
+                smoothedLevels[item.id] = (alpha * instantPct) + ((1 - alpha) * smoothedLevels[item.id]);
 
-                const levelPct = channelPeakHold[item.id];
+                const levelPct = Math.round(smoothedLevels[item.id]);
 
                 const card = document.getElementById(`card-${item.id}`);
                 const bar = document.getElementById(`bar-${item.id}`);
@@ -489,6 +487,25 @@
                 freqCtx.font = isSelected ? 'bold 10px sans-serif' : '9px sans-serif';
                 freqCtx.fillText(item.id, targetX - 5, 12);
             });
+        }
+
+        function addFaultLog(msg) {
+            const logBox = document.getElementById("faultLogBox");
+            const timeStr = new Date().toLocaleTimeString();
+            const logItem = document.createElement("div");
+            logItem.className = "text-rose-400 font-bold border-b border-slate-900 pb-0.5";
+            logItem.innerText = `[${timeStr}] ${msg}`;
+            logBox.prepend(logItem);
+
+            // Keep max 30 logs
+            if (logBox.children.length > 30) {
+                logBox.removeChild(logBox.lastChild);
+            }
+        }
+
+        function clearLogs() {
+            const logBox = document.getElementById("faultLogBox");
+            logBox.innerHTML = `<span class="text-slate-600">로그가 초기화되었습니다.</span>`;
         }
 
         window.addEventListener('resize', () => {
