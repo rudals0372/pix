@@ -136,6 +136,7 @@
             { id: 'f14', tx: 'T714', rx: 'R714', target: 7125 }
         ];
 
+        const TOLERANCE = 30;
         let selectedChannel = null;
 
         let audioCtx = null;
@@ -145,12 +146,17 @@
         let animationFrameId = null;
         let isMeasuring = false;
 
+        // Peak-Hold Memory & Volume Smoothing Buffer
+        const channelPeakHold = {};
+        const channelPeakTimer = {};
+        const channelHistory = {};
         let overallPeakHz = 0;
         let overallPeakTimer = 0;
-        const channelLevels = {};
 
         FREQ_TABLE.forEach(item => {
-            channelLevels[item.id] = 0;
+            channelPeakHold[item.id] = 0;
+            channelPeakTimer[item.id] = 0;
+            channelHistory[item.id] = [];
         });
 
         let gainMultiplier = 1.5;
@@ -252,8 +258,7 @@
                     audio: {
                         echoCancellation: false,
                         noiseSuppression: false,
-                        autoGainControl: false,
-                        channelCount: 1
+                        autoGainControl: false
                     }
                 });
 
@@ -262,18 +267,12 @@
                     await audioCtx.resume();
                 }
 
-                // C타입 저주파 전원 노이즈 차단을 위한 150Hz 하이패스 필터
-                const highPass = audioCtx.createBiquadFilter();
-                highPass.type = 'highpass';
-                highPass.frequency.setValueAtTime(150, audioCtx.currentTime);
-
                 analyser = audioCtx.createAnalyser();
-                analyser.fftSize = 2048; // 대역폭 집중을 통한 안정화
+                analyser.fftSize = 4096;
                 analyser.smoothingTimeConstant = 0.85;
 
                 microphoneNode = audioCtx.createMediaStreamSource(mediaStream);
-                microphoneNode.connect(highPass);
-                highPass.connect(analyser);
+                microphoneNode.connect(analyser);
 
                 isMeasuring = true;
                 btnText.innerText = "수신 중지";
@@ -322,7 +321,8 @@
                     card.className = "p-2 rounded-xl border text-left transition-all duration-200 flex flex-col justify-between min-h-[68px] relative overflow-hidden bg-slate-900 border-slate-800 hover:border-slate-700";
                 }
                 if (name) name.className = "font-bold text-xs text-slate-300";
-                channelLevels[item.id] = 0;
+                channelPeakHold[item.id] = 0;
+                channelHistory[item.id] = [];
             });
 
             drawEmptyGrid();
@@ -352,8 +352,7 @@
             const freqData = new Uint8Array(analyser.frequencyBinCount);
             analyser.getByteFrequencyData(freqData);
 
-            const sampleRate = audioCtx.sampleRate;
-            const binResolution = (sampleRate / 2) / analyser.frequencyBinCount;
+            const binResolution = (audioCtx.sampleRate / 2) / analyser.frequencyBinCount;
 
             freqCtx.fillStyle = '#020617';
             freqCtx.fillRect(0, 0, width, height);
@@ -378,34 +377,36 @@
             const now = Date.now();
 
             FREQ_TABLE.forEach(item => {
-                // 타겟 주파수 주변 대역(±35Hz)의 에너지를 집중 스캔
-                const minHz = item.target - 35;
-                const maxHz = item.target + 35;
+                const minHz = item.target - TOLERANCE;
+                const maxHz = item.target + TOLERANCE;
                 const startBin = Math.floor(minHz / binResolution);
                 const endBin = Math.ceil(maxHz / binResolution);
 
-                let peakVal = 0;
+                let channelMax = 0;
                 for (let b = startBin; b <= endBin; b++) {
-                    if (freqData[b] > peakVal) {
-                        peakVal = freqData[b];
-                    }
+                    if (freqData[b] > channelMax) channelMax = freqData[b];
                 }
 
-                // 감도 배율 적용
-                let rawVal = peakVal * gainMultiplier;
+                let amplifiedVal = Math.min(255, channelMax * gainMultiplier);
+                let instantPct = Math.round((amplifiedVal / 255) * 100);
 
-                // [강력한 노이즈 게이트]: 미세한 변동폭은 완전히 무시하고 0으로 고정
-                if (rawVal < 28) {
-                    rawVal = 0;
+                if (instantPct < 10) instantPct = 0;
+
+                // [볼륨 널뛰기 방지] 최근 5프레임 이동 평균(Moving Average) 적용
+                const history = channelHistory[item.id];
+                history.push(instantPct);
+                if (history.length > 5) history.shift();
+                const smoothedPct = history.reduce((a, b) => a + b, 0) / history.length;
+
+                // Peak Hold & Decay
+                if (smoothedPct >= channelPeakHold[item.id]) {
+                    channelPeakHold[item.id] = smoothedPct;
+                    channelPeakTimer[item.id] = now + 1500; // 유지 시간
+                } else if (now > channelPeakTimer[item.id]) {
+                    channelPeakHold[item.id] = Math.max(0, channelPeakHold[item.id] - 1.0); // 부드러운 감쇄
                 }
 
-                let targetPct = Math.min(100, Math.round((rawVal / 255) * 100));
-
-                // 묵직하고 부드러운 스무딩(EMA)으로 널뛰기 방지
-                const alpha = targetPct > channelLevels[item.id] ? 0.25 : 0.08;
-                channelLevels[item.id] = channelLevels[item.id] + alpha * (targetPct - channelLevels[item.id]);
-
-                const levelPct = Math.round(channelLevels[item.id]);
+                const levelPct = Math.round(channelPeakHold[item.id]);
 
                 const card = document.getElementById(`card-${item.id}`);
                 const bar = document.getElementById(`bar-${item.id}`);
@@ -507,5 +508,3 @@
     </script>
 </body>
 </html>
-```
-@@eof
