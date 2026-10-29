@@ -273,13 +273,14 @@
                     await audioCtx.resume();
                 }
 
+                // 강력한 하이패스 필터로 저주파 전원 및 젠더 잡음 원천 차단 (120Hz 이하 컷)
                 const highPassFilter = audioCtx.createBiquadFilter();
                 highPassFilter.type = 'highpass';
-                highPassFilter.frequency.setValueAtTime(80, audioCtx.currentTime);
+                highPassFilter.frequency.setValueAtTime(120, audioCtx.currentTime);
 
                 analyser = audioCtx.createAnalyser();
-                analyser.fftSize = 4096;
-                analyser.smoothingTimeConstant = 0.80; // 반응 속도를 조금 더 빠르게 조절
+                analyser.fftSize = 8192; // FFT 해상도를 두 배로 높여 주파수 선택 정밀도 극대화
+                analyser.smoothingTimeConstant = 0.50; // 기본 스무딩을 낮춰 민감도 확보 후 자체 필터 적용
 
                 microphoneNode = audioCtx.createMediaStreamSource(mediaStream);
                 
@@ -394,22 +395,37 @@
                 const endBin = Math.ceil(maxHz / binResolution);
 
                 let channelMax = 0;
+                let energySum = 0;
+                let binCount = 0;
+                
+                // 해당 주파수 대역 내 최고 피크와 평균 노이즈 레벨 동시 측정
                 for (let b = startBin; b <= endBin; b++) {
-                    if (freqData[b] > channelMax) channelMax = freqData[b];
+                    const val = freqData[b];
+                    if (val > channelMax) channelMax = val;
+                    energySum += val;
+                    binCount++;
                 }
+                
+                const channelAvg = binCount > 0 ? (energySum / binCount) : 0;
 
-                // C타입 추가 보정 배율을 제거하고 원본 수신 감도 스케일로 복원
-                let amplifiedVal = Math.min(255, channelMax * gainMultiplier);
+                // [기가막힌 핵심 로직]: 
+                // 1. 주변 평균 노이즈보다 확실하게 솟아오른 순수 신호 크기(Peak - Average)만 추출합니다.
+                // 2. 이 방식을 쓰면 C타입 전체 볼륨이 출렁거려도 순수 신호의 상대적 높이기 때문에 널뛰기가 완전히 잡힙니다.
+                let netSignal = channelMax - (channelAvg * 0.8);
+                if (netSignal < 0) netSignal = 0;
+
+                let amplifiedVal = Math.min(255, netSignal * gainMultiplier * 1.5);
                 let instantPct = Math.round((amplifiedVal / 255) * 100);
 
-                if (instantPct < 10) instantPct = 0;
+                // 강력한 노이즈 게이트: 25% 미만은 깔끔하게 0으로 날려버려 바닥을 바짝 고정합니다.
+                if (instantPct < 25) instantPct = 0;
 
-                // EMA 필터링 계산
+                // 부드러운 EMA 반영 (상승은 빠르게, 하강은 차분하게)
                 if (smoothedLevels[item.id] === undefined) {
                     smoothedLevels[item.id] = 0;
                 }
                 
-                const alpha = instantPct > smoothedLevels[item.id] ? 0.6 : 0.2;
+                const alpha = instantPct > smoothedLevels[item.id] ? 0.7 : 0.15;
                 smoothedLevels[item.id] = smoothedLevels[item.id] + alpha * (instantPct - smoothedLevels[item.id]);
 
                 const levelPct = Math.round(smoothedLevels[item.id]);
