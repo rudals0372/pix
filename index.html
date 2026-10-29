@@ -254,6 +254,12 @@
 
         async function startMeasurement() {
             try {
+                // 모바일 브라우저 호환성을 위한 AudioContext 먼저 생성 및 활성화
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') {
+                    await audioCtx.resume();
+                }
+
                 mediaStream = await navigator.mediaDevices.getUserMedia({
                     audio: {
                         echoCancellation: false,
@@ -262,11 +268,6 @@
                         channelCount: 1
                     }
                 });
-
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx.state === 'suspended') {
-                    await audioCtx.resume();
-                }
 
                 analyser = audioCtx.createAnalyser();
                 analyser.fftSize = 2048;
