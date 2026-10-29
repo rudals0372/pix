@@ -398,19 +398,17 @@
                     if (freqData[b] > channelMax) channelMax = freqData[b];
                 }
 
-                // C타입 젠더 수신율 개선을 위한 기본 증폭 보정 계수(1.6배) 적용
-                const cTypeBoost = 1.6;
-                let amplifiedVal = Math.min(255, channelMax * gainMultiplier * cTypeBoost);
+                // C타입 추가 보정 배율을 제거하고 원본 수신 감도 스케일로 복원
+                let amplifiedVal = Math.min(255, channelMax * gainMultiplier);
                 let instantPct = Math.round((amplifiedVal / 255) * 100);
 
-                if (instantPct < 8) instantPct = 0;
+                if (instantPct < 10) instantPct = 0;
 
                 // EMA 필터링 계산
                 if (smoothedLevels[item.id] === undefined) {
                     smoothedLevels[item.id] = 0;
                 }
                 
-                // 값이 올라갈 때는 빠르게, 내려갈 때는 부드럽게 반응하도록 설정
                 const alpha = instantPct > smoothedLevels[item.id] ? 0.6 : 0.2;
                 smoothedLevels[item.id] = smoothedLevels[item.id] + alpha * (instantPct - smoothedLevels[item.id]);
 
