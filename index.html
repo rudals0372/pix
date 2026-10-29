@@ -258,7 +258,8 @@
                     audio: {
                         echoCancellation: false,
                         noiseSuppression: false,
-                        autoGainControl: false
+                        autoGainControl: false,
+                        channelCount: 1
                     }
                 });
 
@@ -268,8 +269,8 @@
                 }
 
                 analyser = audioCtx.createAnalyser();
-                analyser.fftSize = 4096;
-                analyser.smoothingTimeConstant = 0.85;
+                analyser.fftSize = 2048;
+                analyser.smoothingTimeConstant = 0.5;
 
                 microphoneNode = audioCtx.createMediaStreamSource(mediaStream);
                 microphoneNode.connect(analyser);
@@ -398,12 +399,12 @@
                 if (history.length > 5) history.shift();
                 const smoothedPct = history.reduce((a, b) => a + b, 0) / history.length;
 
-                // Peak Hold & Decay
+                // Peak Hold & Decay (값이 한 번에 떨어지지 않고 부드럽게 감쇄)
                 if (smoothedPct >= channelPeakHold[item.id]) {
                     channelPeakHold[item.id] = smoothedPct;
                     channelPeakTimer[item.id] = now + 1500; // 유지 시간
                 } else if (now > channelPeakTimer[item.id]) {
-                    channelPeakHold[item.id] = Math.max(0, channelPeakHold[item.id] - 1.0); // 부드러운 감쇄
+                    channelPeakHold[item.id] = Math.max(0, channelPeakHold[item.id] - 1.0);
                 }
 
                 const levelPct = Math.round(channelPeakHold[item.id]);
@@ -449,7 +450,7 @@
             }
             const currentPeakHz = Math.round(maxBin * binResolution);
 
-            if (maxVal > 25) {
+            if (maxVal > 20) {
                 overallPeakHz = currentPeakHz;
                 overallPeakTimer = now + 1000;
             }
