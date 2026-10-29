@@ -136,7 +136,7 @@
             { id: 'f14', tx: 'T714', rx: 'R714', target: 7125 }
         ];
 
-        const TOLERANCE = 30;
+        const TOLERANCE = 20; // 좁은 밴드로 정확히 타겟 주파수만 포착
         let selectedChannel = null;
 
         let audioCtx = null;
@@ -146,12 +146,9 @@
         let animationFrameId = null;
         let isMeasuring = false;
 
-        // Peak variables definition
         let overallPeakHz = 0;
         let overallPeakTimer = 0;
         const channelPeakHold = {};
-
-        // Exponential Moving Average (EMA) smoothed levels for stable yet responsive metering
         const smoothedLevels = {};
 
         FREQ_TABLE.forEach(item => {
@@ -159,7 +156,6 @@
             channelPeakHold[item.id] = 0;
         });
 
-        // Gain Multiplier
         let gainMultiplier = 1.5;
 
         // DOM elements
@@ -210,7 +206,6 @@
             });
         }
 
-        // Select channel
         function selectChannel(item) {
             selectedChannel = item;
             
@@ -256,15 +251,13 @@
 
         async function startMeasurement() {
             try {
-                // C타입 디지털 젠더 및 브라우저의 오디오 압축/보정 알고리즘 완전 차단 설정
                 mediaStream = await navigator.mediaDevices.getUserMedia({
                     audio: {
                         echoCancellation: false,
                         noiseSuppression: false,
                         autoGainControl: false,
                         channelCount: 1,
-                        sampleRate: 44100,
-                        sampleSize: 16
+                        sampleRate: 44100
                     }
                 });
 
@@ -273,17 +266,16 @@
                     await audioCtx.resume();
                 }
 
-                // 강력한 하이패스 필터로 저주파 전원 및 젠더 잡음 원천 차단 (120Hz 이하 컷)
+                // C타입 저주파 전원 및 기계 노이즈 차단을 위한 정밀 하이패스 필터
                 const highPassFilter = audioCtx.createBiquadFilter();
                 highPassFilter.type = 'highpass';
-                highPassFilter.frequency.setValueAtTime(120, audioCtx.currentTime);
+                highPassFilter.frequency.setValueAtTime(150, audioCtx.currentTime);
 
                 analyser = audioCtx.createAnalyser();
-                analyser.fftSize = 8192; // FFT 해상도를 두 배로 높여 주파수 선택 정밀도 극대화
-                analyser.smoothingTimeConstant = 0.30; // 널뛰기를 잡기 위해 반응 속도를 안정적으로 조정
+                analyser.fftSize = 8192;
+                analyser.smoothingTimeConstant = 0.50; // 높은 스무딩으로 널뛰기 완벽 방지
 
                 microphoneNode = audioCtx.createMediaStreamSource(mediaStream);
-                
                 microphoneNode.connect(highPassFilter);
                 highPassFilter.connect(analyser);
 
@@ -334,7 +326,6 @@
                     card.className = "p-2 rounded-xl border text-left transition-all duration-200 flex flex-col justify-between min-h-[68px] relative overflow-hidden bg-slate-900 border-slate-800 hover:border-slate-700";
                 }
                 if (name) name.className = "font-bold text-xs text-slate-300";
-                channelPeakHold[item.id] = 0;
             });
 
             drawEmptyGrid();
@@ -394,36 +385,33 @@
                 const startBin = Math.floor(minHz / binResolution);
                 const endBin = Math.ceil(maxHz / binResolution);
 
-                let channelMax = 0;
-                let energySum = 0;
+                let targetEnergy = 0;
                 let binCount = 0;
-                
-                // 해당 주파수 대역 내 최고 피크와 평균 노이즈 레벨 동시 측정
+
+                // 타겟 주파수 대역의 평균 에너지 밀도 계산
                 for (let b = startBin; b <= endBin; b++) {
-                    const val = freqData[b];
-                    if (val > channelMax) channelMax = val;
-                    energySum += val;
+                    targetEnergy += freqData[b];
                     binCount++;
                 }
+                const avgEnergy = binCount > 0 ? (targetEnergy / binCount) : 0;
+
+                // [핵심 차단막]: 일정한 정현파 신호가 들어올 때만 값을 부여하고, 잡음이나 널뛰기는 즉시 0으로 고정
+                let rawVal = avgEnergy * gainMultiplier;
                 
-                const channelAvg = binCount > 0 ? (energySum / binCount) : 0;
+                // 절대 임계값 적용 (신호가 확실하지 않으면 바가 꿈틀대지 않도록 철저히 차단)
+                if (rawVal < 35) {
+                    rawVal = 0;
+                }
 
-                // [확실한 해결책]: 전체 볼륨 널뛰기를 완전히 무시하기 위해 주변 노이즈 대비 명확히 튀는 값만 허용
-                let netSignal = channelMax - channelAvg;
-                if (netSignal < 12) netSignal = 0; // 최소 노이즈 마진 미만은 완전 차단
+                let targetPct = Math.min(100, Math.round((rawVal / 180) * 100));
 
-                let amplifiedVal = Math.min(255, netSignal * gainMultiplier * 1.2);
-                let instantPct = Math.round((amplifiedVal / 255) * 100);
-
-                if (instantPct < 15) instantPct = 0;
-
-                // 부드러운 EMA 반영 (상승/하강을 무겁게 잡아 덜렁거림 원천 차단)
                 if (smoothedLevels[item.id] === undefined) {
                     smoothedLevels[item.id] = 0;
                 }
-                
-                const alpha = instantPct > smoothedLevels[item.id] ? 0.35 : 0.10;
-                smoothedLevels[item.id] = smoothedLevels[item.id] + alpha * (instantPct - smoothedLevels[item.id]);
+
+                // 부드러운 필터링 가중치
+                const alpha = targetPct > smoothedLevels[item.id] ? 0.20 : 0.08;
+                smoothedLevels[item.id] = smoothedLevels[item.id] + alpha * (targetPct - smoothedLevels[item.id]);
 
                 const levelPct = Math.round(smoothedLevels[item.id]);
 
@@ -468,7 +456,7 @@
             }
             const currentPeakHz = Math.round(maxBin * binResolution);
 
-            if (maxVal > 25) {
+            if (maxVal > 30) {
                 overallPeakHz = currentPeakHz;
                 overallPeakTimer = now + 1000;
             }
@@ -515,25 +503,6 @@
                 freqCtx.font = isSelected ? 'bold 10px sans-serif' : '9px sans-serif';
                 freqCtx.fillText(item.id, targetX - 5, 12);
             });
-        }
-
-        function addFaultLog(msg) {
-            const logBox = document.getElementById("faultLogBox");
-            const timeStr = new Date().toLocaleTimeString();
-            const logItem = document.createElement("div");
-            logItem.className = "text-rose-400 font-bold border-b border-slate-900 pb-0.5";
-            logItem.innerText = `[${timeStr}] ${msg}`;
-            logBox.prepend(logItem);
-
-            // Keep max 30 logs
-            if (logBox.children.length > 30) {
-                logBox.removeChild(logBox.lastChild);
-            }
-        }
-
-        function clearLogs() {
-            const logBox = document.getElementById("faultLogBox");
-            logBox.innerHTML = `<span class="text-slate-600">로그가 초기화되었습니다.</span>`;
         }
 
         window.addEventListener('resize', () => {
